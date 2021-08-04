@@ -13,7 +13,7 @@ import fakeEnvironmentInstances.FakeConsole
 ```scala
 import scala.util.Random
 
-val low = 1
+val low  = 1
 val high = 10
 
 val prompt =
@@ -46,7 +46,7 @@ unsafeRun(
   )
 )
 // res0: String = """Pick a number between 1 and 10: 3
-// BZZ Wrong!! Answer was 2"""
+// BZZ Wrong!! Answer was 1"""
 ```
 
 To properly access a `Random` integer, we will construct a small class that implements this operation
@@ -93,12 +93,12 @@ class FakeRandomInt(hardcodedValue: Int)
 ```scala
 val effectfulGuessingGame =
   for
-    _ <- Console.print(prompt)
+    _      <- Console.print(prompt)
     answer <- RandomInt.between(low, high)
-    guess <- Console.readLine
+    guess  <- Console.readLine
     response = checkAnswer(answer, guess)
   yield prompt + guess + "\n" + response
-// effectfulGuessingGame: ZIO[Has[RandomInt] & Has[Console], IOException, String] = zio.ZIO$FlatMap@43d24a8f
+// effectfulGuessingGame: ZIO[Has[RandomInt] & Has[Console], IOException, String] = zio.ZIO$FlatMap@7aef4776
 ```
 
 ```scala

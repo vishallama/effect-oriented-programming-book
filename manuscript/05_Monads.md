@@ -46,8 +46,7 @@ What if we make a box called `Result` containing *both* the success-path result 
 For simplicity, both the error information and the success data are `String`s:
 
 ```scala
-trait Result
-case class Fail(why: String) extends Result
+case class Fail(why: String)     extends Result
 case class Success(data: String) extends Result
 ```
 
@@ -80,13 +79,17 @@ def show(n: Char) =
       c: String <- op('c', b)
     yield
       println(s"Completed: $c")
-      c
+      c.toUpperCase.nn
 
+  println(compose)
   compose match
-    case _: Fail =>
-      println(s"Error-handling for $compose")
-    case _ =>
-      println(compose)
+    case Fail(why) =>
+      println(s"Error-handling for $why")
+    case Success(data) =>
+      println("Success: " + data)
+end show
+
+// TODO Decide if fold is a bette approach here
 
 end show
 ```
@@ -107,7 +110,8 @@ We'll call `show()` with successive values of `n` from `'a'` to `'d'`:
 show('a')
 // op(a): Fail(a)
 // flatMap() on Fail(a)
-// Error-handling for Fail(a)
+// Fail(a)
+// Error-handling for a
 ```
 
 `op('a', "")` immediately fails when `n = 'a'`, so the result returned from `op()` is `Fail(a)`.
@@ -122,7 +126,8 @@ show('b')
 // flatMap() on Success(a)
 // op(b): Fail(ab)
 // flatMap() on Fail(ab)
-// Error-handling for Fail(ab)
+// Fail(ab)
+// Error-handling for ab
 ```
 
 With `n = 'b'`, the first expression in the `for` comprehension is now successful.
@@ -138,7 +143,8 @@ show('c')
 // flatMap() on Success(ab)
 // op(c): Fail(abc)
 // map() on Fail(abc)
-// Error-handling for Fail(abc)
+// Fail(abc)
+// Error-handling for abc
 ```
 
 Now we get all the way to the third expression in the `for` comprehension before it fails.
@@ -156,7 +162,8 @@ show('d')
 // op(c): Success(abc)
 // map() on Success(abc)
 // Completed: abc
-// Success(abc)
+// Success(ABC)
+// Success: ABC
 ```
 
 When `map()` is called on the result of `op('c', b)`, the return value of `map()` is used to initialize `c`.
@@ -192,9 +199,6 @@ trait Result:
         fail
 
 end Result
-
-case class Fail(why: String) extends Result
-case class Success(data: String) extends Result
 ```
 
 
