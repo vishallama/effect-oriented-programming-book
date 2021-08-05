@@ -88,10 +88,6 @@ def show(n: Char) =
     case Success(data) =>
       println("Success: " + data)
 end show
-
-// TODO Decide if fold is a bette approach here
-
-end show
 ```
 
 `show()` takes `n: Char` indicating how far we want to get through the execution of `compose` before it fails.
@@ -176,6 +172,7 @@ The `yield` expression automatically wraps `c` in a `Success` object.
 The identifier name for `val compose` is intentional.
 We are composing a result from multiple expressions and the whole `for` comprehension will either succeed or fail.
 
+We now know that, for our type to be automatically unpacked by the `<-` within a `for` comprehension, it must have a `map()` and a `flatMap()`.
 Here's the full definition of `Result`:
 
 ```scala
@@ -201,11 +198,47 @@ trait Result:
 end Result
 ```
 
+{{ Explanation }}
+
+## Predefined Monads
+
+Because the `for` comprehension provides direct support for monads, you might not be surprised to discover that Scala comes with some predefined monads.
+The two most common of these are `Either` and `Option`.
+
+`Either` looks just like our `Result` monad; it just uses different names.
+People commonly use `Either` to produce the same effect.
+
+X> Modify `ShowResult.scala` to use `Either` instead of `Result`.
+X> Your output should look like this:
 
 
+```scala
+'a' to 'd' map eshow
+// >> show(a) <<
+// op(a): Left(a)
+// Left(a)
+// Error-handling for a
+// >> show(b) <<
+// op(a): Right(a)
+// op(b): Left(ab)
+// Left(ab)
+// Error-handling for ab
+// >> show(c) <<
+// op(a): Right(a)
+// op(b): Right(ab)
+// op(c): Left(abc)
+// Left(abc)
+// Error-handling for abc
+// >> show(d) <<
+// op(a): Right(a)
+// op(b): Right(ab)
+// op(c): Right(abc)
+// Completed: abc
+// Right(abc)
+// res4: IndexedSeq[Unit] = Vector((), (), (), ())
+```
 
+- Exercise: modify ShowResult.scala to work with `Option`
 - Exercise: show that GenericResult.scala works with ShowResult.scala
 - Exercise: Modify Above solution to work with `Int` instead of `String`
-- Exercise: Show that `Either` works with ShowResult.scala
-- Exercise: modify ShowResult.scala to work with `Option`
-- Exercise: Modify GenericResult.scala to create GenericOption.scala, implementing your on version of `Option`
+- Exercise: Modify GenericResult.scala to create GenericOption.scala, implementing your own version of `Option`
