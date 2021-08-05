@@ -213,7 +213,7 @@ X> Your output should look like this:
 
 
 ```scala
-'a' to 'd' map eshow
+'a' to 'd' foreach eshow
 // >> show(a) <<
 // op(a): Left(a)
 // Left(a)
@@ -235,7 +235,6 @@ X> Your output should look like this:
 // op(c): Right(abc)
 // Completed: abc
 // Right(abc)
-// res4: IndexedSeq[Unit] = Vector((), (), (), ())
 ```
 
 - Exercise: modify ShowResult.scala to work with `Option`
