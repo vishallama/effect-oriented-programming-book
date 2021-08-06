@@ -274,7 +274,7 @@ X> Your output should look like this:
 `None` simply means that there is no value, which isn't necessarily an error.
 For example, if you look something up in a `Map`, there might not be a value for your key, so returning an `Option` of `None` is a common and reasonable result.
 
-X> **Exercise 3:** Modify ShowResult.scala to work with `Option` instead of `Result`.
+X> **Exercise 3:** Modify `ShowResult.scala` to work with `Option` instead of `Result`.
 X> Your output should look like this:
 
 
@@ -303,3 +303,39 @@ X> Your output should look like this:
 // Some(abc)
 ```
 
+X> **Exercise 4:** Modify `Result.scala` so `Result` is an `enum` instead of a `trait`.
+X> Demonstrate that the `enum Result` works by modifying `ShowResult.scala`.
+X> Your output should look like this:
+
+
+
+```scala
+'a' to 'd' foreach showRE
+// op(a): FailRE(a)
+// flatMap() on FailRE(a)
+// FailRE(a)
+// Error-handling for a
+// op(a): SuccessRE(a)
+// flatMap() on SuccessRE(a)
+// op(b): FailRE(ab)
+// flatMap() on FailRE(ab)
+// FailRE(ab)
+// Error-handling for ab
+// op(a): SuccessRE(a)
+// flatMap() on SuccessRE(a)
+// op(b): SuccessRE(ab)
+// flatMap() on SuccessRE(ab)
+// op(c): FailRE(abc)
+// map() on FailRE(abc)
+// FailRE(abc)
+// Error-handling for abc
+// op(a): SuccessRE(a)
+// flatMap() on SuccessRE(a)
+// op(b): SuccessRE(ab)
+// flatMap() on SuccessRE(ab)
+// op(c): SuccessRE(abc)
+// map() on SuccessRE(abc)
+// Completed: abc
+// SuccessRE(ABC)
+// Success: ABC
+```
