@@ -362,8 +362,7 @@ val fc1 =
     a <- Right("A")
     b <- Right("B")
     c <- Right("C")
-  yield
-    s"Result: $a $b $c"
+  yield s"Result: $a $b $c"
 // fc1: Either[Nothing, String] = Right("Result: A B C")
 ```
 
