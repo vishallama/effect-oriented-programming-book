@@ -351,4 +351,23 @@ X> Your output should look like this:
 
 ## Understanding the `for` Comprehension
 
-Using the {{Either or Option}} predefined monad, we can produce a clearer understanding of what the `for` comprehension is doing.
+At this point you should have a sense of what a `for` comprehension is doing, but *how* it does it is still a bit mysterious.
+Using the `Either` predefined monad, we can produce a clearer understanding.
+Here, each expression in `compose1` uses `Right`, so each one can never fail.
+This doesn't matter because we just want to look at the structure of the code:
+
+```scala
+val fc1 =
+  for
+    a <- Right("A")
+    b <- Right("B")
+    c <- Right("C")
+  yield
+    s"Result: $a $b $c"
+// fc1: Either[Nothing, String] = Right("Result: A B C")
+```
+
+IntelliJ IDEA provides a nice tool that expands this comprehension to show the calls to `flatMap()` and `map()`.
+If you select the `for`, you'll see a little light bulb appear.
+Click on that and select
+
