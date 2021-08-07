@@ -38,10 +38,6 @@ There are two goals for exceptions:
 
 2. Reduce redundant error-handling code by handling associated errors in a single place.
 
-TODO: Need better insights on the problems with exceptions
-The problem with exceptions is that they lose important context information when they are thrown.
-Also it separates "normal failure" from "exceptional failure" (Map get() example).
-
 What if we make a box called `Result` containing *both* the success-path result together with error information if it fails?
 For simplicity, both the error information and the success data are `String`s:
 
@@ -50,11 +46,11 @@ case class Fail(why: String)     extends Result
 case class Success(data: String) extends Result
 ```
 
-If you reach a point in a function where something goes wrong, you return a `Fail Result` with failure information stored in `why`.
-If you get all the way through the function without any failures, you return a `Success Result` with the return calculation stored in `data`.
+If you reach a point in a function where something goes wrong, you return a `Fail` with failure information stored in `why`.
+If you get all the way through the function without any failures, you return a `Success` with the return calculation stored in `data`.
 
-The Scala `for`-comprehension is designed to work with monads.
-The `<-` in a comprehension *automatically checks and unpacks a monad!*
+The Scala `for` comprehension is designed to work with monads.
+The `<-` in a `for` comprehension *automatically checks and unpacks a monad!*
 The monad does not have to be a standard or built-in type; you can write one yourself as we've done with `Result`.
 Let's see how it works:
 
@@ -68,7 +64,7 @@ def show(n: Char) =
         Fail(msg + id.toString)
       else
         Success(msg + id.toString)
-    println(s"op($id): $result")
+    println(s"$n => op($id): $result")
     result
   end op
 
@@ -78,51 +74,57 @@ def show(n: Char) =
       b: String <- op('b', a)
       c: String <- op('c', b)
     yield
-      println(s"Completed: $c")
-      c.toUpperCase.nn
+      println(s"Yielding: $c + 'd'")
+      c + 'd'
 
-  println(compose)
+  println(s"compose: $compose")
+
   compose match
     case Fail(why) =>
       println(s"Error-handling for $why")
     case Success(data) =>
-      println("Success: " + data)
+      println("Successful case: " + data)
+
 end show
 ```
 
 `show()` takes `n: Char` indicating how far we want to get through the execution of `compose` before it fails.
-Note that `n` is in scope within the nested function `op()`.
-`op()` compares `n` to its `id` argument and if they're equal it returns a `Fail` object, otherwise it returns a `Success` object.
+Note that `n` is in scope within the nested function `op()`, which compares `n` to its `id` argument.
+If they're equal, it returns a `Fail` object, otherwise it returns a `Success` object.
 
-The `for`-comprehension within `compose` attempts to execute three calls to `op()`, each of which has a successive `id`.
+The `for` comprehension within `compose` attempts to execute three calls to `op()`, each of which takes the next value of `id` in alphabetic succession.
 Each expression uses the backwards-arrow `<-` to assign the result to a `String` value.
 That value is passed to `op()` in the subsequent expression in the comprehension.
-If all three expressions execute successfully, the `yield` expression uses `c` to produce the final `Result`.
+If all three expressions execute successfully, the `yield` expression uses `c` to produce the final `Result` value which is assigned to `compose`.
 
-But what happens if a call to `op()` fails?
+What happens if a call to `op()` fails?
 We'll call `show()` with successive values of `n` from `'a'` to `'d'`:
 
 ```scala
 show('a')
-// op(a): Fail(a)
+// a => op(a): Fail(a)
 // flatMap() on Fail(a)
-// Fail(a)
+// compose: Fail(a)
 // Error-handling for a
 ```
 
 `op('a', "")` immediately fails when `n = 'a'`, so the result returned from `op()` is `Fail(a)`.
-The `<-` calls `flatMap()` on that result, *but no further lines in `compose` are executed*.
-The execution stops and the resulting value of `compose` becomes `Fail(a)`.
+
+Here's where things get especially interesting, because in a `for` comprehension, Scala automatically calls `flatMap()` for a `<-`.
+So `flatMap()` is called on the result of of `op('a', "")` and *no further lines in `compose` are executed*.
+The `a` to the left of the `<-` is never initialized, nor are `b` or `c`.
+The resulting value of `compose` becomes the value returned by `flatMap()`, which is `Fail(a)`.
+
 The last lines in `show()` check for failure and execute error-handling code if `Fail` is found.
-This is the equivalent of the `catch` clause in exception handling, so all the error-handling for `compose` is now in one place.
+All the error-handling for `compose` is now in one place, in the same way that a `catch` clause combines error-handling code.
 
 ```scala
 show('b')
-// op(a): Success(a)
+// b => op(a): Success(a)
 // flatMap() on Success(a)
-// op(b): Fail(ab)
+// b => op(b): Fail(ab)
 // flatMap() on Fail(ab)
-// Fail(ab)
+// compose: Fail(ab)
 // Error-handling for ab
 ```
 
@@ -133,13 +135,14 @@ Once again we end up in the error-handling code.
 
 ```scala
 show('c')
-// op(a): Success(a)
+// c => op(a): Success(a)
 // flatMap() on Success(a)
-// op(b): Success(ab)
+// c => op(b): Success(ab)
 // flatMap() on Success(ab)
-// op(c): Fail(abc)
+// c => op(c): Fail(abc)
 // map() on Fail(abc)
-// Fail(abc)
+// map() returns Fail(abc)
+// compose: Fail(abc)
 // Error-handling for abc
 ```
 
@@ -151,18 +154,20 @@ Finally, `n = 'd'` successfully makes it through the entire initialization for `
 
 ```scala
 show('d')
-// op(a): Success(a)
+// d => op(a): Success(a)
 // flatMap() on Success(a)
-// op(b): Success(ab)
+// d => op(b): Success(ab)
 // flatMap() on Success(ab)
-// op(c): Success(abc)
+// d => op(c): Success(abc)
 // map() on Success(abc)
-// Completed: abc
-// Success(ABC)
-// Success: ABC
+// Yielding: abc + 'd'
+// map() returns Success(abcd)
+// compose: Success(abcd)
+// Successful case: abcd
 ```
 
-When `map()` is called on the result of `op('c', b)`, the return value of `map()` is used to initialize `c`.
+The return value of `op('c', b)` is `Success(abc)` and this is used to initialize `c`.
+
 The `yield` expression produces the final result that is assigned to `compose`.
 You should find all potential problems by the time you reach `yield`, so the `yield` expression should not be able to fail.
 Note that `c` is of type `String` but `compose` is of type `Result`.
@@ -189,11 +194,14 @@ trait Result:
 
   def map(f: String => String): Result =
     println(s"map() on $this")
-    this.match
-      case Success(c) =>
-        Success(f(c))
-      case fail: Fail =>
-        fail
+    val r =
+      this.match
+        case Success(c) =>
+          Success(f(c))
+        case fail: Fail =>
+          fail
+    println(s"map() returns $r")
+    r
 
 end Result
 ```
