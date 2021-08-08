@@ -94,7 +94,7 @@ val logicClunky: ZIO[Console, Nothing, Unit] =
       ZIO
         .accessZIO[Console](_.printLine("World"))
   yield ()
-// logicClunky: ZIO[Console, Nothing, Unit] = zio.ZIO$FlatMap@3dc752e
+// logicClunky: ZIO[Console, Nothing, Unit] = zio.ZIO$FlatMap@4e83ccf
 
 import zio.Runtime.default.unsafeRun
 unsafeRun(logicClunky.provide(ConsoleLive))
@@ -110,6 +110,7 @@ We want to leverage the `Has` type so that our code can use an arbitrary number 
 ```scala
 import zio.Has
 
+// TODO remove alt companions and make top-level functions
 object ConsoleWithAccessor:
   def printLine(
       variable: => String
@@ -125,7 +126,7 @@ val logic: ZIO[Has[Console], Nothing, Unit] =
     _ <- ConsoleWithAccessor.printLine("Hello")
     _ <- ConsoleWithAccessor.printLine("World")
   yield ()
-// logic: ZIO[Has[Console], Nothing, Unit] = zio.ZIO$FlatMap@68c33eda
+// logic: ZIO[Has[Console], Nothing, Unit] = zio.ZIO$FlatMap@6ac00914
 ```
 
 However, providing dependencies to the logic is still tedious.
