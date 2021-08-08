@@ -377,14 +377,11 @@ The result looks like this:
 
 ```scala
 val fc2 =
-  Right("A")
-    .flatMap(a =>
-      Right("B")
-        .flatMap(b =>
-          Right("C")
-            .map(c => s"Result: $a $b $c")
-        )
+  Right("A").flatMap(a =>
+    Right("B").flatMap(b =>
+      Right("C").map(c => s"Result: $a $b $c")
     )
+  )
 // fc2: Either[Nothing, String] = Right("Result: A B C")
 ```
 

@@ -57,11 +57,11 @@ We could take the bare-minimum approach of catching the `Exception` and returnin
 def displayTemperatureNull(
     behavior: String
 ): String =
-    try
-      "Temperature: " + getTemperature(behavior)
-    catch
-      case (ex: RuntimeException) =>
-        "Temperature: " + null
+  try
+    "Temperature: " + getTemperature(behavior)
+  catch
+    case (ex: RuntimeException) =>
+      "Temperature: " + null
 
 displayTemperatureNull("Network Error")
 // res1: String = "Temperature: null"
@@ -75,11 +75,11 @@ Maybe we could fallback to a `sentinel` value, such as `0` or `-1` to indicate a
 def displayTemperature(
     behavior: String
 ): String =
-    try
-      "Temperature: " + getTemperature(behavior)
-    catch
-      case (ex: RuntimeException) =>
-        "Temperature: -1 degrees"
+  try
+    "Temperature: " + getTemperature(behavior)
+  catch
+    case (ex: RuntimeException) =>
+      "Temperature: -1 degrees"
 
 displayTemperature("Network Error")
 // res2: String = "Temperature: -1 degrees"
@@ -92,11 +92,11 @@ We can take a more honest and accurate approach in this situation.
 def displayTemperature(
     behavior: String
 ): String =
-    try
-      "Temperature: " + getTemperature(behavior)
-    catch
-      case (ex: RuntimeException) =>
-        "Temperature Unavailable"
+  try
+    "Temperature: " + getTemperature(behavior)
+  catch
+    case (ex: RuntimeException) =>
+      "Temperature Unavailable"
 
 displayTemperature("Network Error")
 // res3: String = "Temperature Unavailable"
@@ -111,13 +111,13 @@ The Network issue is transient, but the GPS problem is likely permanent.
 def displayTemperature(
     behavior: String
 ): String =
-    try
-      "Temperature: " + getTemperature(behavior)
-    catch
-      case (ex: NetworkException) =>
-        "Network Unavailable"
-      case (ex: GpsException) =>
-        "GPS problem"
+  try
+    "Temperature: " + getTemperature(behavior)
+  catch
+    case (ex: NetworkException) =>
+      "Network Unavailable"
+    case (ex: GpsException) =>
+      "GPS problem"
 
 displayTemperature("Network Error")
 // res4: String = "Network Unavailable"
@@ -187,8 +187,10 @@ import mdoc.unsafeRunTruncate
 ```
 
 ```scala
-unsafeRunTruncate(getTemperatureZGpsGap("GPS Error"))
-// Unhandled defect: scala.MatchError: repl.MdocSe
+unsafeRunTruncate(
+  getTemperatureZGpsGap("GPS Error")
+)
+// Unhandled defect: scala.MatchError: repl.Mdo
 ```
 
 The compiler does not catch this bug, and instead fails at runtime. Can we do better?
