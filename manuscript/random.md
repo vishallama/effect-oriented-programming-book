@@ -46,7 +46,7 @@ unsafeRun(
   )
 )
 // res0: String = """Pick a number between 1 and 10: 3
-// BZZ Wrong!! Answer was 1"""
+// BZZ Wrong!! Answer was 9"""
 ```
 
 To properly access a `Random` integer, we will construct a small class that implements this operation
@@ -98,7 +98,7 @@ val effectfulGuessingGame =
     guess  <- Console.readLine
     response = checkAnswer(answer, guess)
   yield prompt + guess + "\n" + response
-// effectfulGuessingGame: ZIO[Has[RandomInt] & Has[Console], IOException, String] = zio.ZIO$FlatMap@7bb6dee
+// effectfulGuessingGame: ZIO[Has[RandomInt] & Has[Console], IOException, String] = zio.ZIO$FlatMap@7fccc6f5
 ```
 
 ```scala
