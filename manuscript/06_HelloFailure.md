@@ -190,7 +190,8 @@ import mdoc.unsafeRunTruncate
 unsafeRunTruncate(
   getTemperatureZGpsGap("GPS Error")
 )
-// Unhandled defect: scala.MatchError: repl.Mdo
+// Defect: class scala.MatchError
+//         GpsException
 ```
 
 The compiler does not catch this bug, and instead fails at runtime. Can we do better?
