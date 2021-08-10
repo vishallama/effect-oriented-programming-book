@@ -94,7 +94,7 @@ val logicClunky: ZIO[Console, Nothing, Unit] =
       ZIO
         .accessZIO[Console](_.printLine("World"))
   yield ()
-// logicClunky: ZIO[Console, Nothing, Unit] = zio.ZIO$FlatMap@194ce453
+// logicClunky: ZIO[Console, Nothing, Unit] = zio.ZIO$FlatMap@475488e9
 
 import zio.Runtime.default.unsafeRun
 unsafeRun(logicClunky.provide(ConsoleLive))
@@ -127,7 +127,7 @@ val logic: ZIO[Has[Console], Nothing, Unit] =
     _ <- ConsoleWithAccessor.printLine("Hello")
     _ <- ConsoleWithAccessor.printLine("World")
   yield ()
-// logic: ZIO[Has[Console], Nothing, Unit] = zio.ZIO$FlatMap@5d5001f3
+// logic: ZIO[Has[Console], Nothing, Unit] = zio.ZIO$FlatMap@22a4cb0
 ```
 
 However, providing dependencies to the logic is still tedious.
@@ -166,4 +166,55 @@ unsafeRun(
 // Effect: World
 ```
 
+In real application, both of these will go in the companion object directly.
+
+```scala
+import zio.Layer
+object Console:
+  def printLine(
+      variable: => String
+  ): ZIO[Has[Console], Nothing, Unit] =
+    ZIO.serviceWith(_.printLine(variable))
+
+  val live: Layer[Nothing, Has[Console]] =
+    ZLayer.succeed(ConsoleLive)
+```
+
 ## Official ZIO Approach
+
+TODO
+
+## ZIO Super-Powers
+
+```scala
+object ConsoleSanitized extends Console:
+  def printLine(
+      output: String
+  ): ZIO[Any, Nothing, Unit] =
+    // TODO Get this working without Predef
+    ZIO.succeed(
+      Predef.println(
+        "Sanitized: " +
+          output.replaceAll(
+            "\\d{3}-\\d{2}-\\d{4}",
+            "***-**-****"
+          )
+      )
+    )
+```
+
+```scala
+val leakSensitiveInfo
+    : ZIO[Has[Console], Nothing, Unit] =
+  Console
+    .printLine("Customer SSN is 000-00-0000")
+```
+
+```scala
+unsafeRun(
+  leakSensitiveInfo.provideLayer(
+    ZLayer.succeed[Console](ConsoleSanitized)
+  )
+)
+// Sanitized: Customer SSN is ***-**-****
+```
