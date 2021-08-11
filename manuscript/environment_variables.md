@@ -12,28 +12,62 @@ val apiKey = sys.env.get("API_KEY")
 ```
 
 This seems rather innocuous; however, it can be an annoying source of problems as your project is built and deployed across different environments.
-
+Given this API:
 
 ```scala
-def perfectAnniversaryLodging()
-    : Either[String, String] =
+trait TravelApi:
+  def findCheapestHotel(
+      zipCode: String,
+      apiKey: String
+  ): Either[String, String]
+```
+
+
+Our code could look like this:
+
+```scala
+def perfectAnniversaryLodgingUnsafe(
+    travelApi: TravelApi
+): Either[String, String] =
   val apiKey =
     sys
       .env
       .get("API_KEY")
-      .get // Unsafe, but useful for demo
-  TravelServiceApi
-    .findCheapestHotel("90210", apiKey)
-
-perfectAnniversaryLodging()
-// res0: Either[String, String] = Right("Eddy's Roach Motel")
+      .getOrElse(throw new RuntimeException("Unconfigured Environment"))
+  travelApi.findCheapestHotel("90210", apiKey)
 ```
 
 When you look up an Environment Variable, you are accessing information that was _not_ passed in to your function as an explicit argument.
+On your own machine, this might work as expected.
+
+```scala
+perfectAnniversaryLodgingUnsafe(TravelApiImpl)
+// res0: Either[String, String] = Right("Eddy's Roach Motel")
+```
+
+However, when your collaborator executes this code on their machine, they might have a different value stored in this variable.
+
+
+```scala
+perfectAnniversaryLodgingUnsafe(TravelApiImpl)
+// res2: Either[String, String] = Left("Invalid API Key")
+```
+
+
+```scala
+// On a Continuous Integration Server
+perfectAnniversaryLodgingUnsafe(TravelApiImpl)
+// java.lang.RuntimeException: Unconfigured Environment
+// 	at repl.MdocSession$App.$anonfun$1(environment_variables.md:74)
+// 	at scala.Option.getOrElse(Option.scala:201)
+// 	at repl.MdocSession$App.perfectAnniversaryLodgingUnsafe(environment_variables.md:74)
+// 	at repl.MdocSession$App.$init$$$anonfun$1(environment_variables.md:109)
+```
 
 ## Building a Better Way
 
-Before looking at the official ZIO implementation, we will create a simpler version.
+
+Before looking at the official ZIO implementation of `System`, we will create a simpler version.
 We need a `trait` that will indicate what is needed from the environment.
 
 ```scala
@@ -74,9 +108,9 @@ def perfectAnniversaryLodgingSafe(): ZIO[Has[
 ], Nothing, Either[String, String]] =
   for
     apiKey <- System.env("API_KEY")
-  yield TravelServiceApi.findCheapestHotel(
+  yield TravelApiImpl.findCheapestHotel(
     "90210",
-    apiKey.get // unsafe!
+    apiKey.getOrElse(throw new RuntimeException("Unconfigured Environment"))
   )
 ```
 
@@ -91,7 +125,7 @@ unsafeRun(
     ZLayer.succeed[System](SystemLive())
   )
 )
-// res1: Either[String, String] = Right("Eddy's Roach Motel")
+// res5: Either[String, String] = Right("Eddy's Roach Motel")
 ```
 
 When constructed this way, it becomes very easy to test.
@@ -119,11 +153,13 @@ unsafeRun(
     )
   )
 )
-// res2: Either[String, String] = Left("Invalid API Key")
+// res6: Either[String, String] = Left("Invalid API Key")
 ```
 
 
 ## Official ZIO Approach
+
+ZIO provides a more complete `System` API in the `zio.System`
 
 TODO
 
@@ -135,7 +171,7 @@ def perfectAnniversaryLodgingZ(): ZIO[Has[
 ], Nothing, Either[String, String]] =
   for
     apiKey <- System.env("API_KEY")
-  yield TravelServiceApi.findCheapestHotel(
+  yield TravelApiImpl.findCheapestHotel(
     "90210",
     apiKey.get // unsafe!
   )
