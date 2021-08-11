@@ -22,26 +22,27 @@ What if we had a standard set of operations that work on all boxes, to make our 
 The box---and these associated operations---is a monad.
 
 ## Required Concepts
-- case classes
+### General Programming
 - Sub-typing
+- If/else
+- String interpolation
+- List
+  - Applying functions to elements of a list via `foreach`
+
+### Scala Specific
+
+- case classes
 - Type comes after `identifier:`
 - Functions
   - Last line is the result
-- Nesting
 - Vals
-- If/else
 - Everything is an expression
-- String interpolation
 - Significant Indention / End Marker
 - Match / cases
 - Destructuring through unapply
-- How our examples work
+- How our examples work (MDoc)
   - Result shows on next line
   - Console output shows as following comments
-- Range
-- List
-  - Applying functions to elements of a list via `foreach`
-- 
 
 ## The Error Monad
 
@@ -320,7 +321,7 @@ X> Your output should look like this:
 TODO {{Rewrite with separate check function}}
 
 ```scala
-Range(1, 4).foreach(oshow)
+List(1, 2, 3, 4).foreach(oshow)
 // >> show(1) <<
 // check(1): None
 // None
@@ -336,6 +337,12 @@ Range(1, 4).foreach(oshow)
 // check(3): None
 // None
 // Error-handling for None
+// >> show(4) <<
+// check(1): Some(1)
+// check(2): Some(12)
+// check(3): Some(123)
+// Completed: 123
+// Some(123)
 ```
 
 X> **Exercise 4:** Modify `Result.scala` so `Result` is an `enum` instead of a `trait`.
@@ -345,7 +352,7 @@ X> Your output should look like this:
 
 
 ```scala
-Range(1,4).foreach(showRE)
+List(1, 2, 3, 4).foreach(showRE)
 // check(1): FailRE(1)
 // flatMap on FailRE(1)
 // check(1): SuccessRE(1)
@@ -358,6 +365,13 @@ Range(1,4).foreach(showRE)
 // flatMap on SuccessRE(12)
 // check(3): FailRE(123)
 // map on FailRE(123)
+// check(1): SuccessRE(1)
+// flatMap on SuccessRE(1)
+// check(2): SuccessRE(12)
+// flatMap on SuccessRE(12)
+// check(3): SuccessRE(123)
+// map on SuccessRE(123)
+// Completed: 123
 ```
 
 ## Understanding the `for` Comprehension

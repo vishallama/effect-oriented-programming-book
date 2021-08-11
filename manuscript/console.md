@@ -74,9 +74,7 @@ object ConsoleLive extends Console:
       output: String
   ): ZIO[Any, Nothing, Unit] =
     // TODO Get this working without Predef
-    ZIO.succeed(
-      Predef.println("Effect: " + output)
-    )
+    ZIO.succeed(Predef.println(output))
 ```
 
 TODO{Determine how to best split the 2 pieces we need to add to the same `object` for these steps}
@@ -94,12 +92,12 @@ val logicClunky: ZIO[Console, Nothing, Unit] =
       ZIO
         .accessZIO[Console](_.printLine("World"))
   yield ()
-// logicClunky: ZIO[Console, Nothing, Unit] = zio.ZIO$FlatMap@35b63c45
+// logicClunky: ZIO[Console, Nothing, Unit] = zio.ZIO$FlatMap@112ee798
 
 import zio.Runtime.default.unsafeRun
 unsafeRun(logicClunky.provide(ConsoleLive))
-// Effect: Hello
-// Effect: World
+// Hello
+// World
 ```
 
 The caller has to handle the ZIO environment access, which is a distraction from the logic they want to implement.
@@ -127,7 +125,7 @@ val logic: ZIO[Has[Console], Nothing, Unit] =
     _ <- ConsoleWithAccessor.printLine("Hello")
     _ <- ConsoleWithAccessor.printLine("World")
   yield ()
-// logic: ZIO[Has[Console], Nothing, Unit] = zio.ZIO$FlatMap@16156d31
+// logic: ZIO[Has[Console], Nothing, Unit] = zio.ZIO$FlatMap@7ee8d4b3
 ```
 
 However, providing dependencies to the logic is still tedious.
@@ -139,8 +137,8 @@ unsafeRun(
     ZLayer.succeed[Console](ConsoleLive)
   )
 )
-// Effect: Hello
-// Effect: World
+// Hello
+// World
 ```
 
 ### Four: Create `object Effect.live` field
@@ -162,8 +160,8 @@ Now executing our code is as simple as describing it.
 unsafeRun(
   logic.provideLayer(ConsoleWithLayer.live)
 )
-// Effect: Hello
-// Effect: World
+// Hello
+// World
 ```
 
 In real application, both of these will go in the companion object directly.
@@ -188,19 +186,22 @@ TODO
 
 ```scala
 object ConsoleSanitized extends Console:
+  private val socialSecurity =
+    "\\d{3}-\\d{2}-\\d{4}"
+
   def printLine(
       output: String
   ): ZIO[Any, Nothing, Unit] =
-    // TODO Get this working without Predef
-    ZIO.succeed(
-      Predef.println(
-        "Sanitized: " +
-          output.replaceAll(
-            "\\d{3}-\\d{2}-\\d{4}",
-            "***-**-****"
-          )
-      )
-    )
+    val sanitized =
+      output
+        .replaceAll(
+          socialSecurity,
+          "***-**-****"
+        )
+        .nn
+    // TODO ugh. String methods with explicit
+    // nulls *suck*
+    ConsoleLive.printLine(sanitized)
 ```
 
 ```scala
@@ -216,5 +217,5 @@ unsafeRun(
     ZLayer.succeed[Console](ConsoleSanitized)
   )
 )
-// Sanitized: Customer SSN is ***-**-****
+// Customer SSN is ***-**-****
 ```
