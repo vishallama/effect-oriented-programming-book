@@ -94,7 +94,7 @@ val logicClunky: ZIO[Console, Nothing, Unit] =
       ZIO
         .accessZIO[Console](_.printLine("World"))
   yield ()
-// logicClunky: ZIO[Console, Nothing, Unit] = zio.ZIO$FlatMap@475488e9
+// logicClunky: ZIO[Console, Nothing, Unit] = zio.ZIO$FlatMap@35b63c45
 
 import zio.Runtime.default.unsafeRun
 unsafeRun(logicClunky.provide(ConsoleLive))
@@ -127,7 +127,7 @@ val logic: ZIO[Has[Console], Nothing, Unit] =
     _ <- ConsoleWithAccessor.printLine("Hello")
     _ <- ConsoleWithAccessor.printLine("World")
   yield ()
-// logic: ZIO[Has[Console], Nothing, Unit] = zio.ZIO$FlatMap@22a4cb0
+// logic: ZIO[Has[Console], Nothing, Unit] = zio.ZIO$FlatMap@16156d31
 ```
 
 However, providing dependencies to the logic is still tedious.
