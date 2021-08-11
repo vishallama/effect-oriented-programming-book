@@ -84,27 +84,19 @@ TODO[[ Use Strings everywhere instead of Char]]
 // Monads/ShowResult.scala
 
 def check(
-    // This isn't really an id. Better name?
     id: String,
     end: String,
-    history: String
+    msg: String
 ): Result =
   val result =
     if end == id then
-      Fail(history + id)
+      Fail(msg + id)
     else
-      Success(history + id)
-  println(s"check($id, $end): $result")
+      Success(msg + id)
+  println(s"$end => check($id): $result")
   result
-```
 
-`check` compares `end` to its `id` argument.
-If they're equal, it returns a `Fail` object, otherwise it returns a `Success` object.
-
-```scala
-// This function does much more than show
-// More accurate name?
-def show(end: String): Result =
+def show(end: String) =
   for
     a: String <- check("a", end, "")
     b: String <- check("b", end, a)
@@ -117,18 +109,20 @@ end show
 ```
 
 `show` takes `end: String` indicating how far we want to get through the execution of `compose` before it fails.
+Note that `end` is in scope within the nested function `check`, which compares `end` to its `id` argument.
+If they're equal, it returns a `Fail` object, otherwise it returns a `Success` object.
 
-The `for` comprehension attempts to execute three calls to `check`, each of which takes the next value of `id` in alphabetic succession.
+The `for` comprehension within `compose` attempts to execute three calls to `check`, each of which takes the next value of `id` in alphabetic succession.
 Each expression uses the backwards-arrow `<-` to assign the result to a `String` value.
 That value is passed to `check` in the subsequent expression in the comprehension.
-If all three expressions execute successfully, the `yield` expression uses `c` to produce the final `Result` value which is returned from the function.
+If all three expressions execute successfully, the `yield` expression uses `c` to produce the final `Result` value which is assigned to `compose`.
 
 What happens if a call to `check` fails?
 We'll call `show` with successive values of `end` from `"a"` to `"d"`:
 
 ```scala
 show("a")
-// check(a, a): Fail(a)
+// a => check(a): Fail(a)
 // flatMap on Fail(a)
 // res0: Result = Fail("a")
 ```
@@ -147,9 +141,9 @@ All the error-handling for `compose` is in one place, in the same way that a `ca
 
 ```scala
 show("b")
-// check(a, b): Success(a)
+// b => check(a): Success(a)
 // flatMap on Success(a)
-// check(b, b): Fail(ab)
+// b => check(b): Fail(ab)
 // flatMap on Fail(ab)
 // res1: Result = Fail("ab")
 ```
@@ -161,11 +155,11 @@ Once again we end up in the error-handling code.
 
 ```scala
 show("c")
-// check(a, c): Success(a)
+// c => check(a): Success(a)
 // flatMap on Success(a)
-// check(b, c): Success(ab)
+// c => check(b): Success(ab)
 // flatMap on Success(ab)
-// check(c, c): Fail(abc)
+// c => check(c): Fail(abc)
 // map on Fail(abc)
 // res2: Result = Fail("abc")
 ```
@@ -178,11 +172,11 @@ Finally, `end = "d"` successfully makes it through the entire initialization for
 
 ```scala
 show("d")
-// check(a, d): Success(a)
+// d => check(a): Success(a)
 // flatMap on Success(a)
-// check(b, d): Success(ab)
+// d => check(b): Success(ab)
 // flatMap on Success(ab)
-// check(c, d): Success(abc)
+// d => check(c): Success(abc)
 // map on Success(abc)
 // Yielding: abc + d
 // res3: Result = Success("abcd")
@@ -204,7 +198,7 @@ show("a") match
     println(s"Error-handling for $why")
   case Success(data) =>
     println(s"Handling success value: $data")
-// check(a, a): Fail(a)
+// a => check(a): Fail(a)
 // flatMap on Fail(a)
 // Error-handling for a
 ```
