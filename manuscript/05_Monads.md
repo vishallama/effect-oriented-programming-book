@@ -1,6 +1,5 @@
 # Monads
 
-
 > A function can take any number of inputs, but it can only return a single result.
 
 We often need to convey more information than can fit into a simple result.
@@ -21,8 +20,10 @@ People probably won't use our system unless we figure out a way to simplify and 
 What if we had a standard set of operations that work on all boxes, to make our system easy to use by eliminating all that duplicated code?
 The box---and these associated operations---is a monad.
 
-## Required Concepts
+## Concepts Used in this Chapter
+
 ### General Programming
+
 - Sub-typing
 - If/else
 - String interpolation
@@ -79,26 +80,24 @@ The `<-` in a `for` comprehension *automatically checks and unpacks a monad!*
 The monad does not have to be a standard or built-in type; you can write one yourself as we've done with `Result`.
 Let's see how `Result` works:
 
-TODO[[ Use Strings everywhere instead of Char]]
 ```scala
 // Monads/ShowResult.scala
 
 def check(
-    // This isn't really an id. Better name?
-    id: String,
+    step: String,
     end: String,
     history: String
 ): Result =
   val result =
-    if end == id then
-      Fail(history + id)
+    if step == end then
+      Fail(history + step)
     else
-      Success(history + id)
-  println(s"check($id, $end): $result")
+      Success(history + step)
+  println(s"check($step, $end): $result")
   result
 ```
 
-`check` compares `end` to its `id` argument.
+`check` compares `end` to its `step` argument.
 If they're equal, it returns a `Fail` object, otherwise it returns a `Success` object.
 
 ```scala
@@ -112,13 +111,11 @@ def show(end: String): Result =
   yield
     println(s"Yielding: $c + d")
     c + "d"
-
-end show
 ```
 
 `show` takes `end: String` indicating how far we want to get through the execution of `compose` before it fails.
 
-The `for` comprehension attempts to execute three calls to `check`, each of which takes the next value of `id` in alphabetic succession.
+The `for` comprehension attempts to execute three calls to `check`, each of which takes the next value of `step` in alphabetic succession.
 Each expression uses the backwards-arrow `<-` to assign the result to a `String` value.
 That value is passed to `check` in the subsequent expression in the comprehension.
 If all three expressions execute successfully, the `yield` expression uses `c` to produce the final `Result` value which is returned from the function.
@@ -198,6 +195,7 @@ The `yield` expression is automatically wrapped in a `Success` object.
 We are composing a result from multiple expressions and the whole `for` comprehension will either succeed or fail, and have its own error handling.
 
 TODO{{Explanation of pattern matching in isolation}}
+
 ```scala
 show("a") match
   case Fail(why) =>
@@ -258,8 +256,6 @@ Our `Fail` becomes `Left` in `Either`, and our `Success` becomes `Right`.
 X> **Exercise 1:** Modify `ShowResult.scala` to use `Either` instead of `Result`.
 X> Your output should look like this:
 
-TODO {{Rewrite with separate check function}}
-
 
 ```scala
 List("a", "b", "c", "d").foreach(eshow)
@@ -290,7 +286,6 @@ X> **Exercise 2:** Modify the solution to Exercise 1 to work with `Int` instead 
 X> Change `msg` in the `check` argument list to `i`, an `Int`.
 X> Your output should look like this:
 
-TODO {{Rewrite with separate check function}}
 
 ```scala
 List("a", "b", "c", "d").foreach(ishow)
@@ -324,7 +319,6 @@ For example, if you look something up in a `Map`, there might not be a value for
 X> **Exercise 3:** Modify `ShowResult.scala` to work with `Option` instead of `Result`.
 X> Your output should look like this:
 
-TODO {{Rewrite with separate check function}}
 
 ```scala
 List(1, 2, 3, 4).foreach(oshow)
@@ -425,7 +419,7 @@ The argument to `map` is another function, again not called in the `Left` case.
 In the `Right` case, it returns something different: the `yield` expression.
 Also, `map` wraps the `yield` expression in a `Right`, unlike `flatMap`.
 
-Because of this cascade of functions inside function calls, any `flatMap` or `map` called on a `Left` result *will not evaluate the rest of the cascade.*
+Because of this cascade of functions within functions, any `flatMap` or `map` called on a `Left` result *will not evaluate the rest of the cascade.*
 It stops the evaluation and returns `Left` at that point, and the `Left` becomes the result of the expression.
 This cascaded expression is thus only evaluated up to the point where a `Left` first appears.
 The rest of the expression can be thought of as being short-circuited at that point.
@@ -448,7 +442,7 @@ sol5b
 
 Think back to the first time you grasped the way that dynamic binding worked to produce virtual function behavior.
 In particular, the realization that this pattern is so important that it has been directly implemented by the compiler.
-There was probably some sense that the pattern of inheritance polymorphism is fundamental to object-oriented programming.
+You probably had an insight that the pattern of inheritance polymorphism is fundamental to object-oriented programming.
 
 In this chapter you've experienced a similar realization, but for functional programming.
 Producing result information in a monad is so fundamental to functional programming that the Scala compiler provides direct support for this pattern, in the form of the `for` comprehension.
