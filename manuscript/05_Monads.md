@@ -438,11 +438,24 @@ sol5b
 // res10: Option[String] = Some("Result: A B C")
 ```
 
+{{ Complete this, which is still quite mysterious }}
+
+X> **Exercise 6:** Exercise to explore behavior of `=` in `for` comprehension, in contrast with `<-`.
+
+
+```scala
+showEQ("d")
+// 2nd line
+// check(a, d): Success(a)
+// check(b, d): Success(b)
+// check(c, d): Success(c)
+// res11: IndexedSeq[String] = ArraySeq("yielded")
+```
 ## Summary
 
-Think back to the first time you grasped the way that dynamic binding worked to produce virtual function behavior.
-In particular, the realization that this pattern is so important that it has been directly implemented by the compiler.
+Think back to the first time you grasped the way dynamic binding produces virtual function behavior.
+How you realized that this pattern is so important that it is directly implemented by the compiler.
 You probably had an insight that the pattern of inheritance polymorphism is fundamental to object-oriented programming.
 
 In this chapter you've experienced a similar realization, but for functional programming.
-Producing result information in a monad is so fundamental to functional programming that the Scala compiler provides direct support for this pattern, in the form of the `for` comprehension.
+Producing result information in a monad is so fundamental to functional programming that the Scala compiler provides direct support for this pattern in the form of the `for` comprehension.
