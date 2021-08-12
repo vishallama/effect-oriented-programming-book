@@ -85,35 +85,35 @@ Let's see how `Result` works:
 
 def check(
     step: String,
-    end: String,
+    stop: String,
     history: String
 ): Result =
   val result =
-    if step == end then
+    if step == stop then
       Fail(history + step)
     else
       Success(history + step)
-  println(s"check($step, $end): $result")
+  println(s"check($step, $stop): $result")
   result
 ```
 
-`check` compares `end` to its `step` argument.
+`check` compares `stop` to its `step` argument.
 If they're equal, it returns a `Fail` object, otherwise it returns a `Success` object.
 
 ```scala
 // This function does much more than show
 // More accurate name?
-def show(end: String): Result =
+def show(stop: String): Result =
   for
-    a: String <- check("a", end, "")
-    b: String <- check("b", end, a)
-    c: String <- check("c", end, b)
+    a: String <- check("a", stop, "")
+    b: String <- check("b", stop, a)
+    c: String <- check("c", stop, b)
   yield
     println(s"Yielding: $c + d")
     c + "d"
 ```
 
-`show` takes `end: String` indicating how far we want to get through the execution of `compose` before it fails.
+`show` takes `stop: String` indicating how far we want to get through the execution of `compose` before it fails.
 
 The `for` comprehension attempts to execute three calls to `check`, each of which takes the next value of `step` in alphabetic succession.
 Each expression uses the backwards-arrow `<-` to assign the result to a `String` value.
@@ -121,7 +121,7 @@ That value is passed to `check` in the subsequent expression in the comprehensio
 If all three expressions execute successfully, the `yield` expression uses `c` to produce the final `Result` value which is returned from the function.
 
 What happens if a call to `check` fails?
-We'll call `show` with successive values of `end` from `"a"` to `"d"`:
+We'll call `show` with successive values of `stop` from `"a"` to `"d"`:
 
 ```scala
 show("a")
@@ -130,11 +130,11 @@ show("a")
 // res0: Result = Fail("a")
 ```
 
-`check("a", end, "")` immediately fails when `end = "a"`, so the result returned from `check` is `Fail(a)`.
+`check("a", stop, "")` immediately fails when `stop = "a"`, so the result returned from `check` is `Fail(a)`.
 
 Here's where things get especially interesting.
 When Scala sees `<-` in a `for` comprehension, it automatically calls `flatMap`.
-So `flatMap` is called on the result of of `check("a", end, "")`.
+So `flatMap` is called on the result of of `check("a", stop, "")`.
 That result is `Fail` and *no further lines in `compose` are executed*.
 The `a` to the left of the `<-` is never initialized, nor are `b` or `c`.
 The resulting value of `compose` becomes the value returned by `flatMap`, which is `Fail(a)`.
@@ -151,8 +151,8 @@ show("b")
 // res1: Result = Fail("ab")
 ```
 
-With `end = "b"`, the first expression in the `for` comprehension is now successful.
-The value of `a` is successfully assigned, then passed into `check("b", end, a)` in the second expression.
+With `stop = "b"`, the first expression in the `for` comprehension is now successful.
+The value of `a` is successfully assigned, then passed into `check("b", stop, a)` in the second expression.
 Now the second expression fails and the resulting value of `compose` becomes `Fail(ab)`.
 Once again we end up in the error-handling code.
 
@@ -171,7 +171,7 @@ Now we get all the way to the third expression in the `for` comprehension before
 But notice that in this case `map` is called rather than `flatMap`.
 The last `<-` in a `for` comprehension calls `map` instead of `flatMap`, for reasons that will become clear.
 
-Finally, `end = "d"` successfully makes it through the entire initialization for `compose`:
+Finally, `stop = "d"` successfully makes it through the entire initialization for `compose`:
 
 ```scala
 show("d")
@@ -185,7 +185,7 @@ show("d")
 // res3: Result = Success("abcd")
 ```
 
-The return value of `check("c", end, b)` is `Success(abc)` and this is used to initialize `c`.
+The return value of `check("c", stop, b)` is `Success(abc)` and this is used to initialize `c`.
 
 The `yield` expression produces the final result that is assigned to `compose`.
 You should find all potential problems by the time you reach `yield`, so the `yield` expression should not be able to fail.
