@@ -16,7 +16,7 @@ Given this API:
 
 ```scala
 trait TravelApi:
-  def findCheapestHotel(
+  def cheapestHotel(
       zipCode: String,
       apiKey: String
   ): Either[String, String]
@@ -26,43 +26,51 @@ trait TravelApi:
 Our code could look like this:
 
 ```scala
-def perfectAnniversaryLodgingUnsafe(
+def findPerfectLodgingUnsafe(
     travelApi: TravelApi
 ): Either[String, String] =
   val apiKey =
     sys
       .env
       .get("API_KEY")
-      .getOrElse(throw new RuntimeException("Unconfigured Environment"))
-  travelApi.findCheapestHotel("90210", apiKey)
+      .getOrElse(
+        throw new RuntimeException(
+          "Unconfigured Environment"
+        )
+      )
+  travelApi.cheapestHotel("90210", apiKey)
 ```
 
 When you look up an Environment Variable, you are accessing information that was _not_ passed in to your function as an explicit argument.
-On your own machine, this might work as expected.
+Now we will simulate running the exact same function with the same arguments in 3 different environments.
 
+**Your Machine**
 ```scala
-perfectAnniversaryLodgingUnsafe(TravelApiImpl)
+findPerfectLodgingUnsafe(TravelApiImpl)
 // res0: Either[String, String] = Right("Eddy's Roach Motel")
 ```
 
-However, when your collaborator executes this code on their machine, they might have a different value stored in this variable.
-
+**Collaborator's Machine**
 
 ```scala
-perfectAnniversaryLodgingUnsafe(TravelApiImpl)
+findPerfectLodgingUnsafe(TravelApiImpl)
 // res2: Either[String, String] = Left("Invalid API Key")
 ```
 
+**Continuous Integration Server**
 
 ```scala
-// On a Continuous Integration Server
-perfectAnniversaryLodgingUnsafe(TravelApiImpl)
+findPerfectLodgingUnsafe(TravelApiImpl)
 // java.lang.RuntimeException: Unconfigured Environment
-// 	at repl.MdocSession$App.$anonfun$1(environment_variables.md:74)
+// 	at repl.MdocSession$App.$anonfun$1(environment_variables.md:80)
 // 	at scala.Option.getOrElse(Option.scala:201)
-// 	at repl.MdocSession$App.perfectAnniversaryLodgingUnsafe(environment_variables.md:74)
-// 	at repl.MdocSession$App.$init$$$anonfun$1(environment_variables.md:109)
+// 	at repl.MdocSession$App.findPerfectLodgingUnsafe(environment_variables.md:81)
+// 	at repl.MdocSession$App.$init$$$anonfun$1(environment_variables.md:117)
 ```
+
+On your own machine, everything works as expected.
+However, your collaborator has a different value stored in this variable, and gets a failure when they execute this code.
+Finally, the CI server has set _any_ value, and completely blows up at runtime.
 
 ## Building a Better Way
 
@@ -108,9 +116,13 @@ def perfectAnniversaryLodgingSafe(): ZIO[Has[
 ], Nothing, Either[String, String]] =
   for
     apiKey <- System.env("API_KEY")
-  yield TravelApiImpl.findCheapestHotel(
+  yield TravelApiImpl.cheapestHotel(
     "90210",
-    apiKey.getOrElse(throw new RuntimeException("Unconfigured Environment"))
+    apiKey.getOrElse(
+      throw new RuntimeException(
+        "Unconfigured Environment"
+      )
+    )
   )
 ```
 
@@ -171,8 +183,68 @@ def perfectAnniversaryLodgingZ(): ZIO[Has[
 ], Nothing, Either[String, String]] =
   for
     apiKey <- System.env("API_KEY")
-  yield TravelApiImpl.findCheapestHotel(
+  yield TravelApiImpl.cheapestHotel(
     "90210",
     apiKey.get // unsafe!
   )
 ```
+
+
+## Exercises
+```scala
+import zio.test.environment.TestSystem
+import zio.test.environment.TestSystem.Data
+```
+
+X> **Exercise 1:** Create a function will report missing Environment Variables as `NoSuchElementException` failures, instead of an `Option` success case.
+```scala
+trait Exercise1:
+  def envOrFail(variable: String): ZIO[Has[
+    zio.System
+  ], SecurityException | NoSuchElementException, String]
+```
+
+
+```scala
+val exercise1case1 =
+  unsafeRun(
+    Exercise1Solution
+      .envOrFail("key")
+      .provideLayer(
+        TestSystem.live(
+          Data(envs = Map("key" -> "value"))
+        )
+      )
+  )
+// exercise1case1: String = "value"
+assert(exercise1case1 == "value")
+```
+
+
+```scala
+val exercise1case2 =
+  unsafeRun(
+    Exercise1Solution
+      .envOrFail("key")
+      .catchSome {
+        case _: NoSuchElementException =>
+          ZIO.succeed("Expected Error")
+      }
+      .provideLayer(
+        TestSystem.live(Data(envs = Map()))
+      )
+  )
+// exercise1case2: String = "Expected Error"
+
+assert(exercise1case2 == "Expected Error")
+```
+
+X> **Exercise 2:** Create a function will attempt to parse a value as an Integer and report errors as a `NumberFormatException`.
+```scala
+trait Exercise2:
+  def envInt(variable: String): ZIO[
+    Any,
+    NoSuchElementException |
+      NumberFormatException,
+    Int
+  ]
