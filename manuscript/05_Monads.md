@@ -438,19 +438,6 @@ sol5b
 // res10: Option[String] = Some("Result: A B C")
 ```
 
-{{ Complete this, which is still quite mysterious }}
-
-X> **Exercise 6:** Exercise to explore behavior of `=` in `for` comprehension, in contrast with `<-`.
-
-
-```scala
-showEQ("d")
-// 2nd line
-// check(a, d): Success(a)
-// check(b, d): Success(b)
-// check(c, d): Success(c)
-// res11: IndexedSeq[String] = ArraySeq("yielded")
-```
 ## Summary
 
 Think back to the first time you grasped the way dynamic binding produces virtual function behavior.
