@@ -3,23 +3,24 @@
 ## Historic Approach
 
 
-Environment Variables are a common way of providing dynamic and/or sensitive data to your running application.
-A basic use-case looks like this:
+Environment Variables are a common way of providing dynamic and/or sensitive data to your running application. A basic use-case looks like this:
 
 ```scala
 val apiKey = sys.env.get("API_KEY")
 // apiKey: Option[String] = Some("SECRET_API_KEY")
 ```
 
-This seems rather innocuous; however, it can be an annoying source of problems as your project is built and deployed across different environments.
-Given this API:
+This seems rather innocuous; however, it can be an annoying source of problems as your project is built and deployed across different environments. Given this API:
 
 ```scala
 trait TravelApi:
   def cheapestHotel(
       zipCode: String,
       apiKey: String
-  ): Either[String, String]
+  ): Either[Error, Hotel]
+
+case class Hotel(name: String)
+case class Error(msg: String)
 ```
 
 
@@ -28,55 +29,59 @@ Our code could look like this:
 ```scala
 def findPerfectLodgingUnsafe(
     travelApi: TravelApi
-): Either[String, String] =
-  val apiKey =
-    sys
-      .env
-      .get("API_KEY")
-      .getOrElse(
-        throw new RuntimeException(
-          "Unconfigured Environment"
+): Either[Error, Hotel] =
+  // TODO How many Option/Either tricks are
+  // appropriate?
+  for
+    apiKey <-
+      sys
+        .env
+        .get("API_KEY")
+        .toRight(
+          Error("Unconfigured Environment")
         )
-      )
-  travelApi.cheapestHotel("90210", apiKey)
+    res <-
+      travelApi.cheapestHotel("90210", apiKey)
+  yield res
 ```
 
-When you look up an Environment Variable, you are accessing information that was _not_ passed in to your function as an explicit argument.
-Now we will simulate running the exact same function with the same arguments in 3 different environments.
+When you look up an Environment Variable, you are accessing information that was _not_ passed in to your function as an explicit argument. Now we will simulate running the exact same function with the same arguments in 3 different environments.
 
 **Your Machine**
+
 ```scala
 findPerfectLodgingUnsafe(TravelApiImpl)
-// res0: Either[String, String] = Right("Eddy's Roach Motel")
+// res0: Either[Error, Hotel] = Right(
+//   Hotel("Eddy's Roach Motel")
+// )
 ```
 
 **Collaborator's Machine**
 
+
 ```scala
 findPerfectLodgingUnsafe(TravelApiImpl)
-// res2: Either[String, String] = Left("Invalid API Key")
+// res2: Either[Error, Hotel] = Left(
+//   Error("Invalid API Key")
+// )
 ```
 
 **Continuous Integration Server**
 
+
 ```scala
 findPerfectLodgingUnsafe(TravelApiImpl)
-// java.lang.RuntimeException: Unconfigured Environment
-// 	at repl.MdocSession$App.$anonfun$1(environment_variables.md:80)
-// 	at scala.Option.getOrElse(Option.scala:201)
-// 	at repl.MdocSession$App.findPerfectLodgingUnsafe(environment_variables.md:81)
-// 	at repl.MdocSession$App.$init$$$anonfun$1(environment_variables.md:117)
+// res4: Either[Error, Hotel] = Left(
+//   Error("Unconfigured Environment")
+// )
 ```
 
-On your own machine, everything works as expected.
-However, your collaborator has a different value stored in this variable, and gets a failure when they execute this code.
-Finally, the CI server has set _any_ value, and completely blows up at runtime.
+On your own machine, everything works as expected. However, your collaborator has a different value stored in this variable, and gets a failure when they execute this code. Finally, the CI server has set _any_ value, and completely blows up at runtime.
 
 ## Building a Better Way
 
 
-Before looking at the official ZIO implementation of `System`, we will create a simpler version.
-We need a `trait` that will indicate what is needed from the environment.
+Before looking at the official ZIO implementation of `System`, we will create a simpler version. We need a `trait` that will indicate what is needed from the environment.
 
 ```scala
 import zio.ZIO
@@ -113,7 +118,7 @@ Now if we use this code, our caller's type signature is forced to tell us that i
 ```scala
 def perfectAnniversaryLodgingSafe(): ZIO[Has[
   System
-], Nothing, Either[String, String]] =
+], Nothing, Either[Error, Hotel]] =
   for
     apiKey <- System.env("API_KEY")
   yield TravelApiImpl.cheapestHotel(
@@ -137,11 +142,10 @@ unsafeRun(
     ZLayer.succeed[System](SystemLive())
   )
 )
-// res5: Either[String, String] = Right("Eddy's Roach Motel")
+// res6: Either[Error, Hotel] = Right(Hotel("Eddy's Roach Motel"))
 ```
 
-When constructed this way, it becomes very easy to test.
-We create a second implementation that accepts test values and serves them to the caller.
+When constructed this way, it becomes very easy to test. We create a second implementation that accepts test values and serves them to the caller.
 
 ```scala
 case class SystemHardcoded(
@@ -165,9 +169,8 @@ unsafeRun(
     )
   )
 )
-// res6: Either[String, String] = Left("Invalid API Key")
+// res7: Either[Error, Hotel] = Left(Error("Invalid API Key"))
 ```
-
 
 ## Official ZIO Approach
 
@@ -180,7 +183,7 @@ import zio.System
 
 def perfectAnniversaryLodgingZ(): ZIO[Has[
   System
-], Nothing, Either[String, String]] =
+], Nothing, Either[Error, Hotel]] =
   for
     apiKey <- System.env("API_KEY")
   yield TravelApiImpl.cheapestHotel(
@@ -189,14 +192,15 @@ def perfectAnniversaryLodgingZ(): ZIO[Has[
   )
 ```
 
-
 ## Exercises
+
 ```scala
 import zio.test.environment.TestSystem
 import zio.test.environment.TestSystem.Data
 ```
 
 X> **Exercise 1:** Create a function will report missing Environment Variables as `NoSuchElementException` failures, instead of an `Option` success case.
+
 ```scala
 trait Exercise1:
   def envOrFail(variable: String): ZIO[Has[
@@ -220,7 +224,6 @@ val exercise1case1 =
 assert(exercise1case1 == "value")
 ```
 
-
 ```scala
 val exercise1case2 =
   unsafeRun(
@@ -240,6 +243,7 @@ assert(exercise1case2 == "Expected Error")
 ```
 
 X> **Exercise 2:** Create a function will attempt to parse a value as an Integer and report errors as a `NumberFormatException`.
+
 ```scala
 trait Exercise2:
   def envInt(variable: String): ZIO[
