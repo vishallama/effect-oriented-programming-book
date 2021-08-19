@@ -135,11 +135,102 @@ We have specific messages for all relevant error cases. However, this still suff
 
 Now we will explore how ZIO enables more powerful, uniform error-handling.
 
-TODO Which should we show first?
-- [Wrapping Legacy Code](#wrapping-legacy-code)
-- [ZIO Error Handling](#zio-error-handling)
+TODO {{Update verbiage now that ZIO section is first}}
 
+- [ZIO Error Handling](#zio-error-handling)
+- [Wrapping Legacy Code](#wrapping-legacy-code)
+
+### ZIO-First Error Handling
+
+
+```scala
+// TODO Consult about type param styling
+import zio.ZIO
+import zio.Runtime.default.unsafeRun
+
+def getTemperatureZ(behavior: String): ZIO[
+  Any,
+  GpsException | NetworkException,
+  String
+] =
+  if (behavior == "GPS Error")
+    ZIO.fail(new GpsException())
+  else if (behavior == "Network Error")
+    // TODO Use a non-exceptional error
+    ZIO.fail(new NetworkException())
+  else
+    ZIO.succeed("30 degrees")
+
+unsafeRun(getTemperatureZ("Succeed"))
+// res6: String = "30 degrees"
+```
+
+```scala
+unsafeRun(
+  getTemperatureZ("Succeed").catchAll {
+    case ex: NetworkException =>
+      ZIO.succeed("Network Unavailable")
+  }
+)
+// error:
+// match may not be exhaustive.
+// 
+// It would fail on pattern case: _: GpsException
+// 
+//     case ex: NetworkException =>
+//     ^
+```
+
+TODO Demonstrate ZIO calculating the error types without an explicit annotation being provided
+
+```scala
+unsafeRun(
+  getTemperatureZ("GPS Error").orDie
+)
+// zio.FiberFailure: Fiber failed.
+// An unchecked error was produced.
+// repl.MdocSession$App$GpsException
+// 	at repl.MdocSession$App.getTemperatureZ$1$$anonfun$1(06_HelloFailure.md:134)
+// 	at zio.ZIO$.fail$$anonfun$1(ZIO.scala:3421)
+// 	at zio.internal.FiberContext.runUntil(FiberContext.scala:448)
+// 	at zio.internal.FiberContext.run(FiberContext.scala:305)
+// 	at zio.Runtime.unsafeRunWith(Runtime.scala:312)
+// 	at zio.Runtime.defaultUnsafeRunSync(Runtime.scala:89)
+// 	at zio.Runtime.defaultUnsafeRunSync$(Runtime.scala:27)
+// 	at zio.Runtime$$anon$3.defaultUnsafeRunSync(Runtime.scala:379)
+// 	at zio.Runtime.unsafeRunSync(Runtime.scala:84)
+// 	at zio.Runtime.unsafeRunSync$(Runtime.scala:27)
+// 	at zio.Runtime$$anon$3.unsafeRunSync(Runtime.scala:379)
+// 	at zio.Runtime.unsafeRun(Runtime.scala:66)
+// 	at zio.Runtime.unsafeRun$(Runtime.scala:27)
+// 	at zio.Runtime$$anon$3.unsafeRun(Runtime.scala:379)
+// 	at repl.MdocSession$App.$init$$$anonfun$2(06_HelloFailure.md:157)
+// 	at mdoc.internal.document.DocumentBuilder$$doc$.crash(DocumentBuilder.scala:75)
+// 	at repl.MdocSession$App.<init>(06_HelloFailure.md:159)
+// 	at repl.MdocSession$.app(06_HelloFailure.md:3)
+// 	at mdoc.internal.document.DocumentBuilder$$doc$.build$$anonfun$2$$anonfun$1(DocumentBuilder.scala:89)
+// 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
+// 	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)
+// 	at scala.Console$.withErr(Console.scala:193)
+// 	at mdoc.internal.document.DocumentBuilder$$doc$.build$$anonfun$1(DocumentBuilder.scala:90)
+// 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
+// 	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)
+// 	at scala.Console$.withOut(Console.scala:164)
+// 	at mdoc.internal.document.DocumentBuilder$$doc$.build(DocumentBuilder.scala:91)
+// 	at mdoc.internal.markdown.MarkdownBuilder$.liftedTree1$1(MarkdownBuilder.scala:47)
+// 	at mdoc.internal.markdown.MarkdownBuilder$.$anonfun$1(MarkdownBuilder.scala:70)
+// 	at mdoc.internal.markdown.MarkdownBuilder$$anon$1.run(MarkdownBuilder.scala:103)
+// 
+// Fiber:Id(1629407152763,5) was supposed to continue to:
+//   a future continuation at zio.Runtime.unsafeRunWith$$anonfun$2(Runtime.scala:311)
+// 
+// Fiber:Id(1629407152763,5) execution trace:
+//   at zio.ZIO.orDieWith$$anonfun$1(ZIO.scala:1300)
+// 
+// Fiber:Id(1629407152763,5) was spawned by: <empty trace>
+```
 ### Wrapping Legacy Code
+
 If we are unable to re-write the fallible function, we can still wrap the call
 
 ```scala
@@ -162,14 +253,14 @@ def getTemperatureZWrapped(
 
 ```scala
 unsafeRun(getTemperatureZWrapped("Succeed"))
-// res6: String = "35 degrees"
+// res8: String = "35 degrees"
 ```
 
 ```scala
 unsafeRun(
   getTemperatureZWrapped("Network Error")
 )
-// res7: String = "Network Unavailable"
+// res9: String = "Network Unavailable"
 ```
 
 This is decent, but does not provide the maximum possible guarantees. Look at what happens if we forget to handle one of our errors.
@@ -196,51 +287,3 @@ unsafeRunTruncate(
 
 The compiler does not catch this bug, and instead fails at runtime. Can we do better?
 
-### ZIO-First Error Handling
-
-
-```scala
-// TODO Consult about type param styling
-def getTemperatureZ(behavior: String): ZIO[
-  Any,
-  GpsException | NetworkException,
-  String
-] =
-  if (behavior == "GPS Error")
-    ZIO.fail(new GpsException())
-  else if (behavior == "Network Error")
-    // TODO Use a non-exceptional error
-    ZIO.fail(new NetworkException())
-  else
-    ZIO.succeed("30 degrees")
-
-unsafeRun(getTemperatureZ("Succeed"))
-// res9: String = "30 degrees"
-```
-
-```scala
-unsafeRun(
-  getTemperatureZ("Succeed").catchAll {
-    case ex: NetworkException =>
-      ZIO.succeed("Network Unavailable")
-  }
-)
-// error: 
-// match may not be exhaustive.
-// 
-// It would fail on pattern case: _: GpsException
-//
-```
-
-TODO Demonstrate ZIO calculating the error types without an explicit annotation being provided
-
-
-```scala
-if 1 == 1 && 2 == 2 && 3 == 3 && 4 == 4 &&
-  5 == 5 && 6 == 6
-then
-  "yay"
-else
-  "damn"
-// res11: String = "yay"
-```
