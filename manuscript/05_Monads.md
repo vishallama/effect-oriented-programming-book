@@ -224,8 +224,6 @@ trait Result:
         fail
       case Success(c) =>
         Success(f(c))
-
-end Result
 ```
 
 The code in the two methods is almost identical.

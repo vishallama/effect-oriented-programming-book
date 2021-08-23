@@ -51,7 +51,6 @@ object OpenSourceLibrary:
   ): Unit =
     DataAnalytics.recordKeyDemographics(userData)
     println(s"DATABASE: Saving data")
-end OpenSourceLibrary
 
 object DataAnalytics:
   def recordKeyDemographics(
