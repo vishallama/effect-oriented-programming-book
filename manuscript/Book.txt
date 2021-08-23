@@ -1,7 +1,7 @@
-00_frontmatter.md
+00_Copyright.md
 01_Introduction.md
-02_What_is_an_Effect.md
-03_Functional_Programming.md
+02_Functional_Programming.md
+03_What_is_an_Effect.md
 04_Reliability.md
 05_Monads.md
 06_Unit.md

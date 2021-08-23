@@ -1,7 +1,16 @@
 # Functional Programming
 
-> [[[The goal of this chapter is to go from zero to the "Schrödinger's Cheshire Cat" program.
-> This will set the reader up for the "What is an Effect" Chapter.]]]
+""" {{ copied from a blog post }}
+a programming paradigm where programs are constructed by applying and composing functions. It is a declarative programming paradigm based on a sequence of functions that only depend on each other in terms of arguments and return values.
+
+Functional programming is good at handling complexity using function composition, splitting difficult problems into manageable problems.
+Then the functions that solve these manageable problems are composed together to solve the original difficult problem.
+Functions obtained with this process tend to be small, increasing their reusability, maintainability, and readability.
+
+Although the initial development time can increase with such restrictions, the increased maintainability compensates for the effort.
+
+Compiler Driven Development. In short: change parts of the code and then let the compiler errors guide you in the rest of the task.
+"""
 
 ## Pure Functions
 The most familiar example of a pure function is a mathematical function.
