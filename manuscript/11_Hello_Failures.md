@@ -185,7 +185,7 @@ unsafeRun(getTemperatureZ("GPS Error").orDie)
 // An unchecked error was produced.
 // repl.MdocSession$App$GpsException
 // 	at repl.MdocSession$App.getTemperatureZ$1$$anonfun$1(11_Hello_Failures.md:134)
-// 	at zio.ZIO$.fail$$anonfun$1(ZIO.scala:3421)
+// 	at zio.ZIO$.fail$$anonfun$1(ZIO.scala:3383)
 // 	at zio.internal.FiberContext.runUntil(FiberContext.scala:448)
 // 	at zio.internal.FiberContext.run(FiberContext.scala:305)
 // 	at zio.Runtime.unsafeRunWith(Runtime.scala:312)
@@ -215,13 +215,13 @@ unsafeRun(getTemperatureZ("GPS Error").orDie)
 // 	at mdoc.internal.markdown.MarkdownBuilder$.$anonfun$1(MarkdownBuilder.scala:70)
 // 	at mdoc.internal.markdown.MarkdownBuilder$$anon$1.run(MarkdownBuilder.scala:103)
 // 
-// Fiber:Id(1629757805076,18) was supposed to continue to:
+// Fiber:Id(1629775681801,17) was supposed to continue to:
 //   a future continuation at zio.Runtime.unsafeRunWith$$anonfun$2(Runtime.scala:311)
 // 
-// Fiber:Id(1629757805076,18) execution trace:
-//   at zio.ZIO.orDieWith$$anonfun$1(ZIO.scala:1300)
+// Fiber:Id(1629775681801,17) execution trace:
+//   at zio.ZIO.orDieWith$$anonfun$1(ZIO.scala:1249)
 // 
-// Fiber:Id(1629757805076,18) was spawned by: <empty trace>
+// Fiber:Id(1629775681801,17) was spawned by: <empty trace>
 ```
 
 ### Wrapping Legacy Code
