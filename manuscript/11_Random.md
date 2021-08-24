@@ -97,7 +97,7 @@ val effectfulGuessingGame =
     guess  <- Console.readLine
     response = checkAnswer(answer, guess)
   yield prompt + guess + "\n" + response
-// effectfulGuessingGame: ZIO[Has[RandomInt] & Has[Console], IOException, String] = zio.ZIO$FlatMap@46e2ddcb
+// effectfulGuessingGame: ZIO[Has[RandomInt] & Has[Console], IOException, String] = zio.ZIO$FlatMap@7c0ef
 ```
 
 ```scala
