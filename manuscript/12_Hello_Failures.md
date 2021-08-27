@@ -141,7 +141,6 @@ TODO {{Update verbiage now that ZIO section is first}}
 ### ZIO-First Error Handling
 
 ```scala
-// TODO Consult about type param styling
 import zio.ZIO
 import zio.Runtime.default.unsafeRun
 
@@ -169,10 +168,12 @@ unsafeRun(
       ZIO.succeed("Network Unavailable")
   }
 )
-// error: 
+// error:
 // match may not be exhaustive.
 // 
 // It would fail on pattern case: _: GpsException
+// 
+//     case ex: NetworkException =>
 //
 ```
 
@@ -180,48 +181,8 @@ unsafeRun(
 TODO Demonstrate ZIO calculating the error types without an explicit annotation being provided
 
 ```scala
-unsafeRun(getTemperatureZ("GPS Error").orDie)
-// zio.FiberFailure: Fiber failed.
-// An unchecked error was produced.
-// repl.MdocSession$App$GpsException
-// 	at repl.MdocSession$App.getTemperatureZ$1$$anonfun$1(12_Hello_Failures.md:134)
-// 	at zio.ZIO$.fail$$anonfun$1(ZIO.scala:3383)
-// 	at zio.internal.FiberContext.runUntil(FiberContext.scala:448)
-// 	at zio.internal.FiberContext.run(FiberContext.scala:305)
-// 	at zio.Runtime.unsafeRunWith(Runtime.scala:312)
-// 	at zio.Runtime.defaultUnsafeRunSync(Runtime.scala:89)
-// 	at zio.Runtime.defaultUnsafeRunSync$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.defaultUnsafeRunSync(Runtime.scala:379)
-// 	at zio.Runtime.unsafeRunSync(Runtime.scala:84)
-// 	at zio.Runtime.unsafeRunSync$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.unsafeRunSync(Runtime.scala:379)
-// 	at zio.Runtime.unsafeRun(Runtime.scala:66)
-// 	at zio.Runtime.unsafeRun$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.unsafeRun(Runtime.scala:379)
-// 	at repl.MdocSession$App.$init$$$anonfun$2(12_Hello_Failures.md:156)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.crash(DocumentBuilder.scala:75)
-// 	at repl.MdocSession$App.<init>(12_Hello_Failures.md:157)
-// 	at repl.MdocSession$.app(12_Hello_Failures.md:3)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.build$$anonfun$2$$anonfun$1(DocumentBuilder.scala:89)
-// 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
-// 	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)
-// 	at scala.Console$.withErr(Console.scala:193)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.build$$anonfun$1(DocumentBuilder.scala:90)
-// 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
-// 	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)
-// 	at scala.Console$.withOut(Console.scala:164)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.build(DocumentBuilder.scala:91)
-// 	at mdoc.internal.markdown.MarkdownBuilder$.liftedTree1$1(MarkdownBuilder.scala:47)
-// 	at mdoc.internal.markdown.MarkdownBuilder$.$anonfun$1(MarkdownBuilder.scala:70)
-// 	at mdoc.internal.markdown.MarkdownBuilder$$anon$1.run(MarkdownBuilder.scala:103)
-// 
-// Fiber:Id(1630013994913,17) was supposed to continue to:
-//   a future continuation at zio.Runtime.unsafeRunWith$$anonfun$2(Runtime.scala:311)
-// 
-// Fiber:Id(1630013994913,17) execution trace:
-//   at zio.ZIO.orDieWith$$anonfun$1(ZIO.scala:1249)
-// 
-// Fiber:Id(1630013994913,17) was spawned by: <empty trace>
+// TODO: Restore mdoc:crash when mdoc is fixed
+unsafeRun( getTemperatureZ("GPS Error") )
 ```
 
 ### Wrapping Legacy Code
@@ -232,7 +193,6 @@ If we are unable to re-write the fallible function, we can still wrap the call
 import zio.Runtime.default.unsafeRun
 import zio.{Task, ZIO}
 ```
-
 
 ```scala
 def getTemperatureZWrapped(
@@ -259,7 +219,6 @@ unsafeRun(
 ```
 
 This is decent, but does not provide the maximum possible guarantees. Look at what happens if we forget to handle one of our errors.
-
 
 ```scala
 def getTemperatureZGpsGap(
