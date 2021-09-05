@@ -168,21 +168,56 @@ unsafeRun(
       ZIO.succeed("Network Unavailable")
   }
 )
-// error:
+// error: 
 // match may not be exhaustive.
 // 
 // It would fail on pattern case: _: GpsException
-// 
-//     case ex: NetworkException =>
 //
 ```
-
 
 TODO Demonstrate ZIO calculating the error types without an explicit annotation being provided
 
 ```scala
-// TODO: Restore mdoc:crash when mdoc is fixed
 unsafeRun( getTemperatureZ("GPS Error") )
+// zio.FiberFailure: Fiber failed.
+// A checked error was not handled.
+// repl.MdocSession$App$GpsException
+// 	at repl.MdocSession$App.getTemperatureZ$1$$anonfun$1(12_Hello_Failures.md:136)
+// 	at zio.ZIO$.fail$$anonfun$1(ZIO.scala:3383)
+// 	at zio.internal.FiberContext.runUntil(FiberContext.scala:448)
+// 	at zio.internal.FiberContext.run(FiberContext.scala:305)
+// 	at zio.Runtime.unsafeRunWith(Runtime.scala:312)
+// 	at zio.Runtime.defaultUnsafeRunSync(Runtime.scala:89)
+// 	at zio.Runtime.defaultUnsafeRunSync$(Runtime.scala:27)
+// 	at zio.Runtime$$anon$3.defaultUnsafeRunSync(Runtime.scala:379)
+// 	at zio.Runtime.unsafeRunSync(Runtime.scala:84)
+// 	at zio.Runtime.unsafeRunSync$(Runtime.scala:27)
+// 	at zio.Runtime$$anon$3.unsafeRunSync(Runtime.scala:379)
+// 	at zio.Runtime.unsafeRun(Runtime.scala:66)
+// 	at zio.Runtime.unsafeRun$(Runtime.scala:27)
+// 	at zio.Runtime$$anon$3.unsafeRun(Runtime.scala:379)
+// 	at repl.MdocSession$App.$init$$$anonfun$2(12_Hello_Failures.md:158)
+// 	at mdoc.internal.document.DocumentBuilder$$doc$.crash(DocumentBuilder.scala:75)
+// 	at repl.MdocSession$App.<init>(12_Hello_Failures.md:159)
+// 	at repl.MdocSession$.app(12_Hello_Failures.md:3)
+// 	at mdoc.internal.document.DocumentBuilder$$doc$.build$$anonfun$2$$anonfun$1(DocumentBuilder.scala:89)
+// 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
+// 	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)
+// 	at scala.Console$.withErr(Console.scala:193)
+// 	at mdoc.internal.document.DocumentBuilder$$doc$.build$$anonfun$1(DocumentBuilder.scala:90)
+// 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
+// 	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)
+// 	at scala.Console$.withOut(Console.scala:164)
+// 	at mdoc.internal.document.DocumentBuilder$$doc$.build(DocumentBuilder.scala:91)
+// 	at mdoc.internal.markdown.MarkdownBuilder$.liftedTree1$1(MarkdownBuilder.scala:47)
+// 	at mdoc.internal.markdown.MarkdownBuilder$.$anonfun$1(MarkdownBuilder.scala:70)
+// 	at mdoc.internal.markdown.MarkdownBuilder$$anon$1.run(MarkdownBuilder.scala:103)
+// 
+// Fiber:Id(1630875942724,17) was supposed to continue to: <empty trace>
+// 
+// Fiber:Id(1630875942724,17) ZIO Execution trace: <empty trace>
+// 
+// Fiber:Id(1630875942724,17) was spawned by: <empty trace>
 ```
 
 ### Wrapping Legacy Code
@@ -232,6 +267,7 @@ import mdoc.unsafeRunTruncate
 ```
 
 ```scala
+import mdoc.unsafeRunTruncate
 unsafeRunTruncate(
   getTemperatureZGpsGap("GPS Error")
 )
