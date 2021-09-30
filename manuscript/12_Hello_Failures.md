@@ -126,7 +126,7 @@ displayTemperature("GPS Error")
 Wonderful!
 We have specific messages for all relevant error cases. However, this still suffers from downsides that become more painful as the codebase grows.
 
-- The signature of `getTemperature` does not alert us that it might fail
+- The signature of `displayTemperature` does not alert us that it might fail
 - If we realize it can fail, we must dig through the implementation to discover the multiple failure values
 
 ## ZIO Error Handling
@@ -178,24 +178,24 @@ unsafeRun(
 TODO Demonstrate ZIO calculating the error types without an explicit annotation being provided
 
 ```scala
-unsafeRun( getTemperatureZ("GPS Error") )
+unsafeRun(getTemperatureZ("GPS Error"))
 // zio.FiberFailure: Fiber failed.
 // A checked error was not handled.
 // repl.MdocSession$App$GpsException
 // 	at repl.MdocSession$App.getTemperatureZ$1$$anonfun$1(12_Hello_Failures.md:136)
-// 	at zio.ZIO$.fail$$anonfun$1(ZIO.scala:3383)
-// 	at zio.internal.FiberContext.runUntil(FiberContext.scala:448)
-// 	at zio.internal.FiberContext.run(FiberContext.scala:305)
-// 	at zio.Runtime.unsafeRunWith(Runtime.scala:312)
-// 	at zio.Runtime.defaultUnsafeRunSync(Runtime.scala:89)
+// 	at zio.ZIO$.fail$$anonfun$1(ZIO.scala:3470)
+// 	at zio.internal.FiberContext.runUntil(FiberContext.scala:457)
+// 	at zio.internal.FiberContext.run(FiberContext.scala:314)
+// 	at zio.Runtime.unsafeRunWith(Runtime.scala:321)
+// 	at zio.Runtime.defaultUnsafeRunSync(Runtime.scala:112)
 // 	at zio.Runtime.defaultUnsafeRunSync$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.defaultUnsafeRunSync(Runtime.scala:379)
-// 	at zio.Runtime.unsafeRunSync(Runtime.scala:84)
+// 	at zio.Runtime$$anon$3.defaultUnsafeRunSync(Runtime.scala:386)
+// 	at zio.Runtime.unsafeRunSync(Runtime.scala:107)
 // 	at zio.Runtime.unsafeRunSync$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.unsafeRunSync(Runtime.scala:379)
-// 	at zio.Runtime.unsafeRun(Runtime.scala:66)
+// 	at zio.Runtime$$anon$3.unsafeRunSync(Runtime.scala:386)
+// 	at zio.Runtime.unsafeRun(Runtime.scala:89)
 // 	at zio.Runtime.unsafeRun$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.unsafeRun(Runtime.scala:379)
+// 	at zio.Runtime$$anon$3.unsafeRun(Runtime.scala:386)
 // 	at repl.MdocSession$App.$init$$$anonfun$2(12_Hello_Failures.md:158)
 // 	at mdoc.internal.document.DocumentBuilder$$doc$.crash(DocumentBuilder.scala:75)
 // 	at repl.MdocSession$App.<init>(12_Hello_Failures.md:159)
@@ -213,11 +213,11 @@ unsafeRun( getTemperatureZ("GPS Error") )
 // 	at mdoc.internal.markdown.MarkdownBuilder$.$anonfun$1(MarkdownBuilder.scala:70)
 // 	at mdoc.internal.markdown.MarkdownBuilder$$anon$1.run(MarkdownBuilder.scala:103)
 // 
-// Fiber:Id(1631636563902,17) was supposed to continue to: <empty trace>
+// Fiber:FiberId(1632972842544,17) was supposed to continue to: <empty trace>
 // 
-// Fiber:Id(1631636563902,17) ZIO Execution trace: <empty trace>
+// Fiber:FiberId(1632972842544,17) ZIO Execution trace: <empty trace>
 // 
-// Fiber:Id(1631636563902,17) was spawned by: <empty trace>
+// Fiber:FiberId(1632972842544,17) was spawned by: <empty trace>
 ```
 
 ### Wrapping Legacy Code
@@ -271,8 +271,6 @@ import mdoc.unsafeRunTruncate
 unsafeRunTruncate(
   getTemperatureZGpsGap("GPS Error")
 )
-// Defect: class scala.MatchError
-//         GpsException
 ```
 
 The compiler does not catch this bug, and instead fails at runtime. Can we do better?
