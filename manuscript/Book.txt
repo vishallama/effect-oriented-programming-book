@@ -1,8 +1,7 @@
 00_Copyright.md
 01_Introduction.md
-03_Why_Functional.md
-05_Reliability.md
-06_Monads.md
+02_Why_Functional.md
+03_Monads.md
 07_Unit.md
 08_The_ZIO_Type.md
 09_Console.md
