@@ -213,12 +213,12 @@ unsafeRun(getTemperatureZ("GPS Error"))
 // 	at mdoc.internal.markdown.MarkdownBuilder$.$anonfun$1(MarkdownBuilder.scala:70)
 // 	at mdoc.internal.markdown.MarkdownBuilder$$anon$1.run(MarkdownBuilder.scala:103)
 // 
-// Fiber:FiberId(1636575682448,11) was supposed to continue to: <empty trace>
+// Fiber:FiberId(1636577413459,11) was supposed to continue to: <empty trace>
 // 
-// Fiber:FiberId(1636575682448,11) execution trace:
+// Fiber:FiberId(1636577413459,11) execution trace:
 //   at 
 // 
-// Fiber:FiberId(1636575682448,11) was spawned by: <empty trace>
+// Fiber:FiberId(1636577413459,11) was spawned by: <empty trace>
 ```
 
 ### Wrapping Legacy Code
