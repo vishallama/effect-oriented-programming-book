@@ -183,20 +183,20 @@ unsafeRun(getTemperatureZ("GPS Error"))
 // A checked error was not handled.
 // repl.MdocSession$App$GpsException
 // 	at repl.MdocSession$App.getTemperatureZ$1$$anonfun$1(09_Hello_Failures.md:136)
-// 	at zio.ZIO$.fail$$anonfun$1(ZIO.scala:3470)
-// 	at zio.internal.FiberContext.runUntil(FiberContext.scala:457)
-// 	at zio.internal.FiberContext.run(FiberContext.scala:314)
-// 	at zio.Runtime.unsafeRunWith(Runtime.scala:321)
-// 	at zio.Runtime.defaultUnsafeRunSync(Runtime.scala:112)
-// 	at zio.Runtime.defaultUnsafeRunSync$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.defaultUnsafeRunSync(Runtime.scala:386)
-// 	at zio.Runtime.unsafeRunSync(Runtime.scala:107)
-// 	at zio.Runtime.unsafeRunSync$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.unsafeRunSync(Runtime.scala:386)
-// 	at zio.Runtime.unsafeRun(Runtime.scala:89)
-// 	at zio.Runtime.unsafeRun$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.unsafeRun(Runtime.scala:386)
-// 	at repl.MdocSession$App.$init$$$anonfun$2(09_Hello_Failures.md:158)
+// 	at zio.ZIO$.fail$$anonfun$1(ZIO.scala:3711)
+// 	at zio.internal.FiberContext.runUntil(FiberContext.scala:392)
+// 	at zio.internal.FiberContext.run(FiberContext.scala:255)
+// 	at zio.Runtime.unsafeRunWith(Runtime.scala:328)
+// 	at zio.Runtime.defaultUnsafeRunSync(Runtime.scala:113)
+// 	at zio.Runtime.defaultUnsafeRunSync$(Runtime.scala:28)
+// 	at zio.Runtime$$anon$3.defaultUnsafeRunSync(Runtime.scala:393)
+// 	at zio.Runtime.unsafeRunSync(Runtime.scala:108)
+// 	at zio.Runtime.unsafeRunSync$(Runtime.scala:28)
+// 	at zio.Runtime$$anon$3.unsafeRunSync(Runtime.scala:393)
+// 	at zio.Runtime.unsafeRun(Runtime.scala:90)
+// 	at zio.Runtime.unsafeRun$(Runtime.scala:28)
+// 	at zio.Runtime$$anon$3.unsafeRun(Runtime.scala:393)
+// 	at repl.MdocSession$App.$init$$$anonfun$2(09_Hello_Failures.md:11)
 // 	at mdoc.internal.document.DocumentBuilder$$doc$.crash(DocumentBuilder.scala:75)
 // 	at repl.MdocSession$App.<init>(09_Hello_Failures.md:159)
 // 	at repl.MdocSession$.app(09_Hello_Failures.md:3)
@@ -213,11 +213,12 @@ unsafeRun(getTemperatureZ("GPS Error"))
 // 	at mdoc.internal.markdown.MarkdownBuilder$.$anonfun$1(MarkdownBuilder.scala:70)
 // 	at mdoc.internal.markdown.MarkdownBuilder$$anon$1.run(MarkdownBuilder.scala:103)
 // 
-// Fiber:FiberId(1636573025399,17) was supposed to continue to: <empty trace>
+// Fiber:FiberId(1636573250000,11) was supposed to continue to: <empty trace>
 // 
-// Fiber:FiberId(1636573025399,17) ZIO Execution trace: <empty trace>
+// Fiber:FiberId(1636573250000,11) execution trace:
+//   at 
 // 
-// Fiber:FiberId(1636573025399,17) was spawned by: <empty trace>
+// Fiber:FiberId(1636573250000,11) was spawned by: <empty trace>
 ```
 
 ### Wrapping Legacy Code
