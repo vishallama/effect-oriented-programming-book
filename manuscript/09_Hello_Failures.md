@@ -179,46 +179,8 @@ TODO Demonstrate ZIO calculating the error types without an explicit annotation 
 
 ```scala
 unsafeRun(getTemperatureZ("GPS Error"))
-// zio.FiberFailure: Fiber failed.
-// A checked error was not handled.
-// repl.MdocSession$App$GpsException
-// 	at repl.MdocSession$App.getTemperatureZ$1$$anonfun$1(09_Hello_Failures.md:136)
-// 	at zio.ZIO$.fail$$anonfun$1(ZIO.scala:3711)
-// 	at zio.internal.FiberContext.runUntil(FiberContext.scala:392)
-// 	at zio.internal.FiberContext.run(FiberContext.scala:255)
-// 	at zio.Runtime.unsafeRunWith(Runtime.scala:328)
-// 	at zio.Runtime.defaultUnsafeRunSync(Runtime.scala:113)
-// 	at zio.Runtime.defaultUnsafeRunSync$(Runtime.scala:28)
-// 	at zio.Runtime$$anon$3.defaultUnsafeRunSync(Runtime.scala:393)
-// 	at zio.Runtime.unsafeRunSync(Runtime.scala:108)
-// 	at zio.Runtime.unsafeRunSync$(Runtime.scala:28)
-// 	at zio.Runtime$$anon$3.unsafeRunSync(Runtime.scala:393)
-// 	at zio.Runtime.unsafeRun(Runtime.scala:90)
-// 	at zio.Runtime.unsafeRun$(Runtime.scala:28)
-// 	at zio.Runtime$$anon$3.unsafeRun(Runtime.scala:393)
-// 	at repl.MdocSession$App.$init$$$anonfun$2(09_Hello_Failures.md:11)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.crash(DocumentBuilder.scala:75)
-// 	at repl.MdocSession$App.<init>(09_Hello_Failures.md:159)
-// 	at repl.MdocSession$.app(09_Hello_Failures.md:3)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.build$$anonfun$2$$anonfun$1(DocumentBuilder.scala:89)
-// 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
-// 	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)
-// 	at scala.Console$.withErr(Console.scala:193)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.build$$anonfun$1(DocumentBuilder.scala:90)
-// 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
-// 	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)
-// 	at scala.Console$.withOut(Console.scala:164)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.build(DocumentBuilder.scala:91)
-// 	at mdoc.internal.markdown.MarkdownBuilder$.liftedTree1$1(MarkdownBuilder.scala:47)
-// 	at mdoc.internal.markdown.MarkdownBuilder$.$anonfun$1(MarkdownBuilder.scala:70)
-// 	at mdoc.internal.markdown.MarkdownBuilder$$anon$1.run(MarkdownBuilder.scala:103)
-// 
-// Fiber:FiberId(1637100198718,11) was supposed to continue to: <empty trace>
-// 
-// Fiber:FiberId(1637100198718,11) execution trace:
-//   at 
-// 
-// Fiber:FiberId(1637100198718,11) was spawned by: <empty trace>
+// zio.FiberFailure: Exception in thread "zio-fiber-1637298895" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
+// 	at repl.MdocSession$.App.<local App>.getTemperatureZ.macro(09_Hello_Failures.md:136)
 ```
 
 ### Wrapping Legacy Code

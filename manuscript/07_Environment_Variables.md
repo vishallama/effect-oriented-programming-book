@@ -235,7 +235,7 @@ This is what it looks like in action:
 
 ```scala
 import zio.Runtime.default.unsafeRun
-import zio.ZLayer
+import zio.ZServiceBuilder
 import mdoc.unsafeRunPrettyPrint
 ```
 
@@ -244,8 +244,8 @@ import mdoc.unsafeRunPrettyPrint
 
 ```scala
 unsafeRunPrettyPrint(
-  fancyLodgingFinal().provideLayer(
-    ZLayer.succeed[System](SystemLive)
+  fancyLodgingFinal().provideServices(
+    ZServiceBuilder.succeed[System](SystemLive)
   )
 )
 ```
@@ -254,8 +254,8 @@ unsafeRunPrettyPrint(
 
 ```scala
 unsafeRunPrettyPrint(
-  fancyLodgingFinal().provideLayer(
-    ZLayer.succeed[System](SystemLive)
+  fancyLodgingFinal().provideServices(
+    ZServiceBuilder.succeed[System](SystemLive)
   )
 )
 // Error(Invalid API Key)
@@ -265,8 +265,8 @@ unsafeRunPrettyPrint(
 
 ```scala
 unsafeRunPrettyPrint(
-  fancyLodgingFinal().provideLayer(
-    ZLayer.succeed[System](SystemLive)
+  fancyLodgingFinal().provideServices(
+    ZServiceBuilder.succeed[System](SystemLive)
   )
 )
 // Error(Unconfigured Environment)
@@ -290,8 +290,8 @@ We can now provide this to our logic, for testing both the success and failure c
 
 ```scala
 unsafeRun(
-  fancyLodgingSafe().provideLayer(
-    ZLayer.succeed[System](
+  fancyLodgingSafe().provideServices(
+    ZServiceBuilder.succeed[System](
       SystemHardcoded(
         Map("API_KEY" -> "Invalid Key")
       )
@@ -324,8 +324,8 @@ def fancyLodgingZ(): ZIO[Has[
 ## Exercises
 
 ```scala
-import zio.test.environment.TestSystem
-import zio.test.environment.TestSystem.Data
+import zio.test.TestSystem
+import zio.test.TestSystem.Data
 ```
 
 X> **Exercise 1:** Create a function will report missing Environment Variables as `NoSuchElementException` failures, instead of an `Option` success case.
@@ -343,7 +343,7 @@ val exercise1case1 =
   unsafeRun(
     Exercise1Solution
       .envOrFail("key")
-      .provideLayer(
+      .provideServices(
         TestSystem.live(
           Data(envs = Map("key" -> "value"))
         )
@@ -362,7 +362,7 @@ val exercise1case2 =
         case _: NoSuchElementException =>
           ZIO.succeed("Expected Error")
       }
-      .provideLayer(
+      .provideServices(
         TestSystem.live(Data(envs = Map()))
       )
   )
