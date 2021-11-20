@@ -378,3 +378,4 @@ trait Exercise2:
       NumberFormatException,
     Int
   ]
+```
