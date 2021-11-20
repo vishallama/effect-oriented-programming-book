@@ -179,7 +179,7 @@ TODO Demonstrate ZIO calculating the error types without an explicit annotation 
 
 ```scala
 unsafeRun(getTemperatureZ("GPS Error"))
-// zio.FiberFailure: Exception in thread "zio-fiber-1637434305" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
+// zio.FiberFailure: Exception in thread "zio-fiber-1637446360" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
 // 	at repl.MdocSession$.App.<local App>.getTemperatureZ.macro(09_Hello_Failures.md:136)
 ```
 

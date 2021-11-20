@@ -114,13 +114,11 @@ object SystemLive extends System:
 Finally, for easier usage by the caller, we create an accessor.
 
 ```scala
-import zio.Has
-
 object System:
   def env(
       variable: => String
-  ): ZIO[Has[System], Nothing, Option[String]] =
-    ZIO.accessZIO[Has[System]](
+  ): ZIO[System, Nothing, Option[String]] =
+    ZIO.environmentWithZIO[System](
       _.get.env(variable)
     )
 ```
@@ -128,9 +126,8 @@ object System:
 Now if we use this code, our caller's type tells us that it requires a `System` to execute.
 
 ```scala
-def fancyLodgingSafe(): ZIO[Has[
-  System
-], Error, Either[Error, Hotel]] =
+def fancyLodgingSafe()
+    : ZIO[System, Error, Either[Error, Hotel]] =
   for
     apiKeyAttempt <- System.env("API_KEY")
     apiKey <-
@@ -150,7 +147,7 @@ We can improve the situation by composing our first accessor with some additiona
 ```scala
 def envRequired(
     variable: String
-): ZIO[Has[System], Error, String] =
+): ZIO[System, Error, String] =
   for
     variableAttempt <- System.env(variable)
     res <-
@@ -165,9 +162,8 @@ def envRequired(
 Using this function, our code becomes more linear and focused.
 
 ```scala
-def fancyLodgingFocused(): ZIO[Has[
-  System
-], Error, Either[Error, Hotel]] =
+def fancyLodgingFocused()
+    : ZIO[System, Error, Either[Error, Hotel]] =
   for
     apiKey <- envRequired("API_KEY")
   yield TravelApiImpl
@@ -178,7 +174,7 @@ Next, we flatten our two `Error` possibilities into the one failure channel.
 
 ```scala
 def fancyLodgingSingleError()
-    : ZIO[Has[System], Error, Hotel] =
+    : ZIO[System, Error, Hotel] =
   for
     apiKey <- envRequired("API_KEY")
     hotel <-
@@ -205,7 +201,7 @@ Our fully ZIO-centric, side-effect-free logic looks like this:
 
 ```scala
 def fancyLodgingFinal()
-    : ZIO[Has[System], Error, Hotel] =
+    : ZIO[System, Error, Hotel] =
   for
     apiKey <- envRequired("API_KEY")
     hotel  <- cheapestHotelZ("90210", apiKey)
@@ -235,7 +231,7 @@ This is what it looks like in action:
 
 ```scala
 import zio.Runtime.default.unsafeRun
-import zio.ZServiceBuilder
+import zio.ZLayer
 import mdoc.unsafeRunPrettyPrint
 ```
 
@@ -244,9 +240,8 @@ import mdoc.unsafeRunPrettyPrint
 
 ```scala
 unsafeRunPrettyPrint(
-  fancyLodgingFinal().provideServices(
-    ZServiceBuilder.succeed[System](SystemLive)
-  )
+  fancyLodgingFinal()
+    .provide(ZLayer.succeed[System](SystemLive))
 )
 ```
 
@@ -254,9 +249,8 @@ unsafeRunPrettyPrint(
 
 ```scala
 unsafeRunPrettyPrint(
-  fancyLodgingFinal().provideServices(
-    ZServiceBuilder.succeed[System](SystemLive)
-  )
+  fancyLodgingFinal()
+    .provide(ZLayer.succeed[System](SystemLive))
 )
 // Error(Invalid API Key)
 ```
@@ -265,9 +259,8 @@ unsafeRunPrettyPrint(
 
 ```scala
 unsafeRunPrettyPrint(
-  fancyLodgingFinal().provideServices(
-    ZServiceBuilder.succeed[System](SystemLive)
-  )
+  fancyLodgingFinal()
+    .provide(ZLayer.succeed[System](SystemLive))
 )
 // Error(Unconfigured Environment)
 ```
@@ -290,8 +283,8 @@ We can now provide this to our logic, for testing both the success and failure c
 
 ```scala
 unsafeRun(
-  fancyLodgingSafe().provideServices(
-    ZServiceBuilder.succeed[System](
+  fancyLodgingSafe().provide(
+    ZLayer.succeed[System](
       SystemHardcoded(
         Map("API_KEY" -> "Invalid Key")
       )
@@ -310,9 +303,11 @@ TODO
 ```scala
 import zio.System
 
-def fancyLodgingZ(): ZIO[Has[
-  zio.System
-], SecurityException, Either[Error, Hotel]] =
+def fancyLodgingZ(): ZIO[
+  zio.System,
+  SecurityException,
+  Either[Error, Hotel]
+] =
   for
     apiKey <- zio.System.env("API_KEY")
   yield TravelApiImpl.cheapestHotel(
@@ -332,9 +327,11 @@ X> **Exercise 1:** Create a function will report missing Environment Variables a
 
 ```scala
 trait Exercise1:
-  def envOrFail(variable: String): ZIO[Has[
-    zio.System
-  ], SecurityException | NoSuchElementException, String]
+  def envOrFail(variable: String): ZIO[
+    zio.System,
+    SecurityException | NoSuchElementException,
+    String
+  ]
 ```
 
 
@@ -343,7 +340,7 @@ val exercise1case1 =
   unsafeRun(
     Exercise1Solution
       .envOrFail("key")
-      .provideServices(
+      .provide(
         TestSystem.live(
           Data(envs = Map("key" -> "value"))
         )
@@ -362,7 +359,7 @@ val exercise1case2 =
         case _: NoSuchElementException =>
           ZIO.succeed("Expected Error")
       }
-      .provideServices(
+      .provide(
         TestSystem.live(Data(envs = Map()))
       )
   )
