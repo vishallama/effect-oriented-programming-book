@@ -179,8 +179,7 @@ TODO Demonstrate ZIO calculating the error types without an explicit annotation 
 
 ```scala
 unsafeRun(getTemperatureZ("GPS Error"))
-// zio.FiberFailure: Exception in thread "zio-fiber-1640052527" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
-// 	at repl.MdocSession$.App.<local App>.getTemperatureZ.macro(09_Hello_Failures.md:136)
+// zio.FiberFailure: repl.MdocSession$App$GpsException
 ```
 
 ### Wrapping Legacy Code
@@ -234,6 +233,8 @@ import mdoc.unsafeRunTruncate
 unsafeRunTruncate(
   getTemperatureZGpsGap("GPS Error")
 )
+// Defect: class scala.MatchError
+//         GpsException
 ```
 
 The compiler does not catch this bug, and instead fails at runtime. Can we do better?

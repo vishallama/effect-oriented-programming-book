@@ -243,6 +243,10 @@ unsafeRunPrettyPrint(
   fancyLodgingFinal()
     .provide(ZLayer.succeed[System](SystemLive))
 )
+// error:
+// Cannot call macro class Hotel defined in the same source file
+//       .provide(
+//        ^^^^^^^
 ```
 
 **Collaborator's Machine**
@@ -252,7 +256,10 @@ unsafeRunPrettyPrint(
   fancyLodgingFinal()
     .provide(ZLayer.succeed[System](SystemLive))
 )
-// Error(Invalid API Key)
+// error:
+// Cannot call macro class Hotel defined in the same source file
+//       .catchSome {
+//     ^
 ```
 
 **Continuous Integration Server**
@@ -262,7 +269,8 @@ unsafeRunPrettyPrint(
   fancyLodgingFinal()
     .provide(ZLayer.succeed[System](SystemLive))
 )
-// Error(Unconfigured Environment)
+// error: 
+// Cannot call macro class Hotel defined in the same source file
 ```
 
 TODO{{The actual line looks the same, which I highlighted as a problem before. How should we indicate that the Environment is different?}}
@@ -291,7 +299,8 @@ unsafeRun(
     )
   )
 )
-// res12: Either[Error, Hotel] = Left(Error("Invalid API Key"))
+// error: 
+// Cannot call macro class Hotel defined in the same source file
 ```
 
 ## Official ZIO Approach
