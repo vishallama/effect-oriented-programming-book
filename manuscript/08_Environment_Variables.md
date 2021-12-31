@@ -53,7 +53,7 @@ def fancyLodgingUnsafe(
 
 When you look up an Environment Variable, you are accessing information that was _not_ passed into your function as an explicit argument. Now we will simulate running the function with the same arguments in 3 different environments.
 
-**Your Machine**
+**Your Machine:**
 
 ```scala
 fancyLodgingUnsafe(TravelApiImpl)
@@ -62,7 +62,7 @@ fancyLodgingUnsafe(TravelApiImpl)
 // )
 ```
 
-**Collaborator's Machine**
+**Collaborator's Machine:**
 
 
 ```scala
@@ -72,7 +72,7 @@ fancyLodgingUnsafe(TravelApiImpl)
 // )
 ```
 
-**Continuous Integration Server**
+**Continuous Integration Server:**
 
 
 ```scala
@@ -82,8 +82,8 @@ fancyLodgingUnsafe(TravelApiImpl)
 // )
 ```
 
-On your own machine, everything works as expected. 
-However, your collaborator has a different value stored in this variable, and gets a failure when they execute this code. 
+On your own machine, everything works as expected.
+However, your collaborator has a different value stored in this variable, and gets a failure when they execute this code.
 Finally, the CI server has not set _any_ value, and fails at runtime.
 
 ## Building a Better Way
@@ -196,6 +196,7 @@ def cheapestHotelZ(
     TravelApiImpl.cheapestHotel("90210", apiKey)
   )
 ```
+
 This was quite a process; where did it get us?
 Our fully ZIO-centric, side-effect-free logic looks like this:
 
@@ -224,9 +225,6 @@ def fancyLodgingUnsafe(
 The logic is _identical_ to our original implementation!
 The only difference is the type signature, which now honestly reports the `System` dependency of our function.
 
-
-
-
 This is what it looks like in action:
 
 ```scala
@@ -235,7 +233,7 @@ import zio.ZLayer
 import mdoc.unsafeRunPrettyPrint
 ```
 
-**Your Machine**
+**Your Machine:**
 
 
 ```scala
@@ -249,7 +247,8 @@ unsafeRunPrettyPrint(
 //        ^^^^^^^
 ```
 
-**Collaborator's Machine**
+**Collaborator's Machine:**
+
 
 ```scala
 unsafeRunPrettyPrint(
@@ -262,7 +261,8 @@ unsafeRunPrettyPrint(
 //     ^
 ```
 
-**Continuous Integration Server**
+**Continuous Integration Server:**
+
 
 ```scala
 unsafeRunPrettyPrint(

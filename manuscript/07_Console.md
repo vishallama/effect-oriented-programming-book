@@ -31,7 +31,6 @@ If we do not have access to the implementation source code, this is a surprise t
 
 ## Building a Better Way
 
-
 Before looking at the official ZIO implementation, we will create a simpler version.
 
 TODO: Decide whether explaining this pattern belongs in a standalone section.
@@ -50,12 +49,10 @@ Steps 3 and 4 are less familiar, and a bit harder to appreciate.
 We endeavor in the following chapters to make a compelling case for them.
 If we succeed, the reader will add them when creating their own Effects.
 
-
 ### One: Create the trait
 
 This `trait` represents a piece of the `Environment` that our codes need to interact with.
 It contains the methods for effectful interactions.
-
 
 ```scala
 import zio.ZIO
@@ -80,6 +77,7 @@ object ConsoleLive extends Console:
 TODO{Determine how to best split the 2 pieces we need to add to the same `object` for these steps}
 
 ### Three: Create Accessor Methods in Companion
+
 The first two steps are enough for us to track Effects in our system, but the ergonomics are not great.
 
 ```scala
@@ -156,7 +154,6 @@ object ConsoleWithLayer:
 ```
 
 Now executing our code is as simple as describing it.
-
 
 ```scala
 unsafeRun(logic.provide(ConsoleWithLayer.live))
