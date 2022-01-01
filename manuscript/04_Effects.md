@@ -36,6 +36,7 @@ This allows us to much more effectively reason about the behavior of our program
 Consider a function that affects its surroundings:
 
 ```scala
+trait X
 object X:
   var x: Int = 0
 
