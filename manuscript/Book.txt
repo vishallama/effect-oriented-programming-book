@@ -1,3 +1,19 @@
+00_Copyright.md
+01_Introduction.md
+02_Why_Functional.md
+03_Monads.md
+04_Effects.md
+05_Unit.md
+06_The_ZIO_Type.md
+07_Console.md
+08_Environment_Variables.md
+09_Random.md
+10_Hello_Failures.md
+11_Cause.md
+12_New_Effects.md
+13_Location.md
+14_Time.md
+15_Resources.md
 typeclasses-game-Entities.md
 typeclasses-game-TypeClassExamples.md
 typeclasses-game-interactions-Interactive.md
@@ -11,6 +27,7 @@ typeclasses-plagiarism-plagiarism.md
 typeclasses-health-Health.md
 typeclasses-health-StateRepresentations.md
 random-Guess.md
+antipatterns-ConfusingInheritance.md
 fakeEnvironmentInstances-FakeRandom.md
 fakeEnvironmentInstances-FakeConsole.md
 directoryExample-userInputLookup.md
