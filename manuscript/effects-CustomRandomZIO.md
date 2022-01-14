@@ -111,5 +111,6 @@ def demoStuff(): Unit =
     println("hi")
     10
   }
+end demoStuff
 
 ```

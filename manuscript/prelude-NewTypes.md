@@ -11,9 +11,9 @@ import zio.Console.printLine
 import zio.prelude.Assertion._
 import zio.prelude.Assertion
 
-/* Notes: Only works for primitive
- * types. You can't get compile-time
- * guarantees for custom classes */
+/* Notes: Only works for primitive types. You
+ * can't get compile-time guarantees for custom
+ * classes */
 
 type NewSpecialClass = NewSpecialClass.Type
 object NewSpecialClass

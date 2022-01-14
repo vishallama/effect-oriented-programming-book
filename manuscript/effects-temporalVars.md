@@ -7,8 +7,10 @@ import java.util.Calendar
 
 object temporalVars:
 
-  // Time based functions are effectful because they 
-  // rely on a variable that is constantly changing.
+  // Time based functions are effectful because
+  // they
+  // rely on a variable that is constantly
+  // changing.
 
   def sayTime() =
     val curTime = Calendar.getInstance()
@@ -31,7 +33,7 @@ object temporalVars:
     sayTime()
     Thread.sleep(3000)
     sayTime()
-    
+
 end temporalVars
 
 // The input for the variable is the same, yet

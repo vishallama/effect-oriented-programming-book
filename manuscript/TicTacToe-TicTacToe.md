@@ -3,21 +3,24 @@
 ```scala
 // From: https://scalac.io/blog/write-command-line-application-with-zio/
 package TicTacToe
-import zio.{Console, ZIOAppDefault , ZEnv, ZIO}
+import zio.{Console, ZIOAppDefault, ZEnv, ZIO}
 
 enum MenuCommand:
   case NewGame, Resume, Quit, Invalid
 
-
 object TicTacToe extends ZIOAppDefault:
 
-  val program: ZIO[Console, java.io.IOException, Unit] =
+  val program
+      : ZIO[Console, java.io.IOException, Unit] =
     Console.printLine("TicTacToe game!")
 
   def run =
     program.foldZIO(
-      error => Console.printLine(s"Execution failed with: $error") *> ZIO.succeed(1)
-      , _ => ZIO.succeed(0)
+      error =>
+        Console.printLine(
+          s"Execution failed with: $error"
+        ) *> ZIO.succeed(1),
+      _ => ZIO.succeed(0)
     )
 
 // -----------------------------------
@@ -25,15 +28,15 @@ object TicTacToe extends ZIOAppDefault:
 abstract case class Name private (name: String)
 
 object Name:
-  def make(name: String) = new Name(name){}
+  def make(name: String) = new Name(name) {}
 
 // Can't inherit because constructor is private:
 // class FirstName(fn: String) extends Name(fn)
 
 def bar =
   val name: Name = Name.make("Bob")
-  //  val name2 = new Name("Joe") {}
-  //  val jan = name.copy("Janet")
+//  val name2 = new Name("Joe") {}
+//  val jan = name.copy("Janet")
 
 // -----------------------------------
 
@@ -49,10 +52,8 @@ def combine2(a: Int, b: Int): XIO[X, Int] =
   X.x += 1
   IntXIO(a + b + X.x)
 
-def foo =
-  combine2(1, 2)
+def foo = combine2(1, 2)
 
 //trait YIO[ENV, F, R] extends Either[F, R]
-
 
 ```
