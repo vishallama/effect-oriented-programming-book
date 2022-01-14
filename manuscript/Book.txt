@@ -11,7 +11,6 @@ typeclasses-plagiarism-plagiarism.md
 typeclasses-health-Health.md
 typeclasses-health-StateRepresentations.md
 random-Guess.md
-antipatterns-ConfusingInheritance.md
 fakeEnvironmentInstances-FakeRandom.md
 fakeEnvironmentInstances-FakeConsole.md
 directoryExample-userInputLookup.md
@@ -57,7 +56,6 @@ Parallelism-BasicFiber.md
 Parallelism-Compose.md
 Parallelism-Interrupt.md
 Parallelism-Await.md
-booker-Booker.md
 atomic-realZIO-ChainingVsComposing.md
 Hubs-QuizGame.md
 Hubs-ReadIntAndMultiply.md
@@ -100,11 +98,10 @@ handlingErrors-catching.md
 handlingErrors-value.md
 ZIOFromNothing-XEnvironment.md
 ZIOFromNothing-ZIOFromScratch.md
-effects-RandomZIO.md
 effects-randomComponents.md
+effects-CustomRandomZIO.md
 effects-IOVars.md
 effects-mutableVars.md
-effects-RandomCrappyStuff.md
 effects-temporalVars.md
 prelude-OurPrimitiveClass.md
 prelude-NewTypes.md
