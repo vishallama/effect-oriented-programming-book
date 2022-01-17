@@ -1,17 +1,15 @@
-# Random
+## random
 
--- Subject Dependencies: `Console`, `ZIO.serviceWith`
+ 
 
-TODO All the prose to justify these hoops
-
+### Guess.scala
 ```scala
-import zio.{Console, Has, UIO, ZIO, ZLayer}
+ // Guess.scala
+package random
+
+import zio.{Console, UIO, ZIO, ZLayer}
 import zio.Runtime.default.unsafeRun
 import fakeEnvironmentInstances.FakeConsole
-```
-
-```scala
-import scala.util.Random
 
 val low  = 1
 val high = 10
@@ -33,29 +31,20 @@ def checkAnswer(
 val sideEffectingGuessingGame =
   for
     _ <- Console.print(prompt)
-    answer = Random.between(low, high)
+    answer = scala.util.Random.between(low, high)
     guess <- Console.readLine
     response = checkAnswer(answer, guess)
   yield prompt + guess + "\n" + response
-```
 
-```scala
-unsafeRun(
-  sideEffectingGuessingGame.provideLayer(
-    ZLayer.succeed(FakeConsole.single("3"))
+@main
+def runSideEffectingGuessingGame =
+  unsafeRun(
+    sideEffectingGuessingGame.provide(
+      ZLayer.succeed(FakeConsole.single("3"))
+    )
   )
-)
-// res0: String = """Pick a number between 1 and 10: 3
-// BZZ Wrong!! Answer was 1"""
-```
 
-To properly access a `Random` integer, we will construct a small class that implements this operation
-in an proper effectful way.
-
-```scala
 import zio.Console.printLine
-
-import zio.{Random}
 
 trait RandomInt:
   def between(high: Int, low: Int): UIO[Int]
@@ -64,10 +53,12 @@ object RandomInt:
   def between(
       low: Int,
       high: Int
-  ): ZIO[Has[RandomInt], Nothing, Int] =
+  ): ZIO[RandomInt, Nothing, Int] =
     // TODO Study and determine how/when to
     // introduct `serviceWith`
-    ZIO.serviceWith(_.between(high, low))
+    ZIO
+      .service[RandomInt]
+      .flatMap(_.between(high, low))
 
   object LiveRandomIntBetween extends RandomInt:
 
@@ -78,7 +69,6 @@ object RandomInt:
       ZIO.succeed(
         scala.util.Random.between(low, high)
       )
-  end LiveRandomIntBetween
 end RandomInt
 
 class FakeRandomInt(hardcodedValue: Int)
@@ -88,9 +78,7 @@ class FakeRandomInt(hardcodedValue: Int)
       high: Int,
       low: Int
   ): UIO[Int] = UIO.succeed(hardcodedValue)
-```
 
-```scala
 val effectfulGuessingGame =
   for
     _      <- Console.print(prompt)
@@ -98,16 +86,16 @@ val effectfulGuessingGame =
     guess  <- Console.readLine
     response = checkAnswer(answer, guess)
   yield prompt + guess + "\n" + response
-// effectfulGuessingGame: ZIO[Has[RandomInt] & Has[Console], IOException, String] = zio.ZIO$FlatMap@654f84da
+
+@main
+def runEffectfulGuessingGame =
+  unsafeRun(
+    effectfulGuessingGame.provide(
+      ZLayer.succeed(FakeConsole.single("3")) ++
+        ZLayer
+          .succeed[RandomInt](FakeRandomInt(3))
+    )
+  )
+
 ```
 
-```scala
-unsafeRun(
-  effectfulGuessingGame.provideLayer(
-    ZLayer.succeed(FakeConsole.single("3")) ++
-      ZLayer.succeed[RandomInt](FakeRandomInt(3))
-  )
-)
-// res1: String = """Pick a number between 1 and 10: 3
-// You got it!"""
-```
