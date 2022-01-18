@@ -49,3 +49,122 @@ This is what our code will return if it completes successfully.
 def defaultGreeting()
     : ZIO[Any, Nothing, String] = ???
 ```
+
+
+## Automatically attached experiments.
+ These are included at the end of this 
+ chapter because their package in the
+ experiments directory matched the name
+ of this chapter. Enjoy working on the
+ code with full editor capabilities :D
+ 
+ 
+
+### FutureToZio.scala
+```scala
+ // FutureToZio.scala
+package the_zio_type
+
+import zio._
+
+import java.io
+import java.io.IOException
+import scala.concurrent.Future
+
+object FutureToZio extends ZIOAppDefault:
+
+  lazy val sFuture: Future[String] =
+    Future.successful("Success!")
+  // Future.failed(new Exception("Failure :("))
+
+  val run =
+    ZIO.fromFuture(implicit ec => sFuture)
+
+```
+
+
+### TryToZio.scala
+```scala
+ // TryToZio.scala
+package the_zio_type
+
+import zio._
+import java.io
+import java.io.IOException
+import scala.util.Try
+
+object TryToZio extends ZIOAppDefault:
+  val dividend = 42
+  val divisor  = 7
+
+  // Significant Note: Try is a standard
+  // collection by-name function. This makes
+  // it a good candidate for introducting that
+  // concept.
+  def sTry: Try[Int] = Try(dividend / divisor)
+
+  val zTry: IO[Throwable, Int] =
+    ZIO.fromTry(sTry)
+
+  val run = zTry
+
+```
+
+
+### EitherToZio.scala
+```scala
+ // EitherToZio.scala
+// EitherToZio.scala
+package the_zio_type
+
+import zio._
+
+import java.io
+import java.io.IOException
+
+case class InvalidIntegerInput(value: String)
+
+def parseInteger(
+    input: String
+): Either[InvalidIntegerInput, Int] =
+  try
+    Right(
+      input.toInt
+    ) // Right case is an integer
+  catch
+    case e: NumberFormatException =>
+      Left(
+        InvalidIntegerInput(input)
+      ) // Left case is an error type
+object EitherToZio extends ZIOAppDefault:
+
+  val zEither: IO[InvalidIntegerInput, Int] =
+    ZIO.fromEither(parseInteger("42"))
+
+  def run = zEither
+
+```
+
+
+### OptionToZio.scala
+```scala
+ // OptionToZio.scala
+package the_zio_type
+
+import java.io
+import zio._
+import java.io.IOException
+
+class OptionToZio extends ZIOAppDefault:
+
+  val alias: Option[String] =
+    Some("Buddy") // sOption is either 1 or None
+
+  val aliasZ: IO[Option[Nothing], String] =
+    ZIO.fromOption(alias)
+
+  val run = aliasZ
+
+```
+
+            
