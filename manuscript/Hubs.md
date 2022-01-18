@@ -7,7 +7,7 @@
  // QuizGame.scala
 package Hubs
 
-import fakeEnvironmentInstances.FakeConsole
+import console.FakeConsole
 
 import java.io.IOException
 import zio.{Hub, Ref, Schedule, ZDequeue, ZIO}
@@ -259,7 +259,7 @@ end QuizGame
  // ReadIntAndMultiply.scala
 package Hubs
 
-import fakeEnvironmentInstances.FakeConsole
+import console.FakeConsole
 import zio.ZIO
 import zio.*
 import zio.Duration.*

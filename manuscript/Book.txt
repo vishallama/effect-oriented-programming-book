@@ -14,6 +14,7 @@
 13_Location.md
 14_Time.md
 15_Resources.md
+16_stm.md
 manuscript/ExperimentsSection.md
 resourcemanagement.md
 ScalaTypesToZio.md
@@ -21,7 +22,6 @@ javawrappers.md
 zioBasics.md
 fpBuildingBlocks.md
 ZIOFromNothing.md
-fakeEnvironmentInstances.md
 scalaBasics.md
 Hubs.md
 directoryExample.md

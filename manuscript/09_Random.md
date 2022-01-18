@@ -6,6 +6,7 @@ TODO All the prose to justify these hoops
 
 NOTE Moved code to `experiments/src/main/scala/random` due to dependency on code not in Chapters
 
+
 ## Automatically attached experiments.
  These are included at the end of this 
  chapter because their package in the
@@ -15,6 +16,148 @@ NOTE Moved code to `experiments/src/main/scala/random` due to dependency on code
  
  
 
+### FakeRandom.scala
+```scala
+ // FakeRandom.scala
+package fakeEnvironmentInstances
+
+import zio.{
+  BuildFrom,
+  Chunk,
+  Console,
+  Random,
+  UIO,
+  ZIO,
+  ZLayer,
+  ZTraceElement
+}
+import zio.Console.printLine
+
+import java.util.UUID
+
+trait RandomInt:
+  def nextIntBounded(n: Int): UIO[Int]
+  def nextInt: UIO[Int]
+  def nextIntBetween(
+      minInclusive: Int,
+      maxExclusive: Int
+  ): UIO[Int]
+
+class FakeRandomInt(hardcodedValue: Int)
+    extends RandomInt:
+  override def nextIntBounded(n: Int): UIO[Int] =
+    UIO.succeed(hardcodedValue)
+
+  override def nextInt: UIO[Int] =
+    UIO.succeed(hardcodedValue)
+  override def nextIntBetween(
+      minInclusive: Int,
+      maxExclusive: Int
+  ): UIO[Int] = UIO.succeed(hardcodedValue)
+
+object RandomInt:
+  object RandomIntLive extends RandomInt:
+    // Consider whether to re-implement from
+    // scratch
+    def nextIntBounded(n: Int): UIO[Int] =
+      Random.RandomLive.nextIntBounded(n)
+
+    def nextInt: UIO[Int] =
+      Random.RandomLive.nextInt
+    def nextIntBetween(
+        minInclusive: Int,
+        maxExclusive: Int
+    ): UIO[Int] =
+      Random
+        .RandomLive
+        .nextIntBetween(
+          minInclusive,
+          maxExclusive
+        )
+
+  val live: ZLayer[Any, Nothing, RandomInt] =
+    ZLayer.succeed(RandomIntLive)
+end RandomInt
+
+class FakeRandom(i: Int) extends Random:
+  def nextUUID(implicit
+      trace: ZTraceElement
+  ): UIO[UUID] = ???
+  def nextBoolean(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Boolean] = ???
+  def nextBytes(length: => Int)(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[zio.Chunk[Byte]] = ???
+  def nextDouble(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Double] = ???
+  def nextDoubleBetween(
+      minInclusive: => Double,
+      maxExclusive: => Double
+  )(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Double] = ???
+  def nextFloat(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Float] = ???
+  def nextFloatBetween(
+      minInclusive: => Float,
+      maxExclusive: => Float
+  )(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Float] = ???
+  def nextGaussian(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Double] = ???
+  def nextInt(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Int] = ???
+  def nextIntBetween(
+      minInclusive: => Int,
+      maxExclusive: => Int
+  )(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Int] = ???
+  def nextIntBounded(n: => Int)(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Int] = ???
+  def nextLong(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Long] = ???
+  def nextLongBetween(
+      minInclusive: => Long,
+      maxExclusive: => Long
+  )(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Long] = ???
+  def nextLongBounded(n: => Long)(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Long] = ???
+  def nextPrintableChar(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Char] = ???
+  def nextString(length: => Int)(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[String] = ???
+  def setSeed(seed: => Long)(implicit
+      trace: zio.ZTraceElement
+  ): zio.UIO[Unit] = ???
+  def shuffle[A, Collection[+Element]
+    <: Iterable[Element]](
+      collection: => Collection[A]
+  )(implicit
+      bf: BuildFrom[Collection[A], A, Collection[
+        A
+      ]],
+      trace: ZTraceElement
+  ): UIO[Collection[A]] = ???
+
+end FakeRandom
+
+```
+
+
 ### Guess.scala
 ```scala
  // Guess.scala
@@ -22,7 +165,7 @@ package random
 
 import zio.{Console, UIO, ZIO, ZLayer}
 import zio.Runtime.default.unsafeRun
-import fakeEnvironmentInstances.FakeConsole
+import console.FakeConsole
 
 val low  = 1
 val high = 10

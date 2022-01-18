@@ -478,6 +478,7 @@ Producing result information in a monad is so fundamental to functional programm
 
 Although `for` has multiple forms in Scala, we will primarily use the form shown in this chapter throughout the book.
 
+
 ## Automatically attached experiments.
  These are included at the end of this 
  chapter because their package in the

@@ -1,4 +1,5 @@
 TODO Come up with a few fun examples that differentiate our explanation from other books
+
 ## Automatically attached experiments.
  These are included at the end of this 
  chapter because their package in the

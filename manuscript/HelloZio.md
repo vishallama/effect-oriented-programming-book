@@ -2,42 +2,6 @@
 
  
 
-### sayHello.scala
-```scala
- // sayHello.scala
-// sayHello.scala
-// This is a first look at using the Zio class
-
-package HelloZio
-
-import java.io
-import zio._
-import java.io.IOException
-
-object HelloWorld:
-
-  @main
-  def hello() =
-    val sayHello
-        : ZIO[Console, IOException, Unit] =
-      Console.printLine("Hello, World!")
-
-  // This is equivalent to the above, but the ZIO
-  // definition is spaced across different lines.
-  // As the ZIO definitions become more
-  // complicated, it is more readable to space
-  // out
-  // the definition.
-  @main
-  def hello2() =
-    val sayHello2
-        : ZIO[Console, IOException, Unit] =
-      Console.printLine("Hello, World!")
-end HelloWorld
-
-```
-
-
 ### CalculatorExample.scala
 ```scala
  // CalculatorExample.scala
@@ -48,9 +12,9 @@ import HelloZio.CalculatorExample.input
 import java.io.IOException
 import zio.Console.{readLine, printLine}
 import zio.Console
-import fakeEnvironmentInstances.FakeConsole
 import zio.Console
 import zio.{IO, Ref, Runtime, ZIO, ZLayer}
+import console.FakeConsole
 
 enum ArithmeticOperation(a: Float, b: Float):
 

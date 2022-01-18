@@ -87,6 +87,7 @@ To achieve this we delay the evaluation of the program and hand it to an *interp
 {{ This seems challenging (albeit illuminating).
 If the example were extremely specific (say, an interpreter that *only* knows about `IntXIO`) perhaps it could work.}}
 
+
 ## Automatically attached experiments.
  These are included at the end of this 
  chapter because their package in the
