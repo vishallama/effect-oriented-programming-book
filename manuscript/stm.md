@@ -1,5 +1,11 @@
-## stm
-
+TODO Come up with a few fun examples that differentiate our explanation from other books
+## Automatically attached experiments.
+ These are included at the end of this 
+ chapter because their package in the
+ experiments directory matched the name
+ of this chapter. Enjoy working on the
+ code with full editor capabilities :D
+ 
  
 
 ### STM.scala
@@ -195,3 +201,4 @@ def stmDemo() =
 
 ```
 
+            
