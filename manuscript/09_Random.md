@@ -248,10 +248,7 @@ trait RandomBoundedInt:
   def nextIntBetween(
       minInclusive: Int,
       maxExclusive: Int
-  ): UIO[Int] =
-    ZIO.succeed(
-      Random.between(minInclusive, maxExclusive)
-    )
+  ): UIO[Int]
 
 import zio.{UIO, ZIO, ZLayer}
 
