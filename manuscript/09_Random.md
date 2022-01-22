@@ -1,5 +1,7 @@
 # Random
 
+There 
+
 {{Subject Dependencies: `Console`, `ZIO.serviceWith`}}
 
 TODO All the prose to justify these hoops
@@ -15,6 +17,82 @@ NOTE Moved code to `experiments/src/main/scala/random` due to dependency on code
  code with full editor capabilities :D
  
  
+
+### OldUnsafeExamples.scala
+```scala
+ // OldUnsafeExamples.scala
+package random
+
+import zio.{Tag, UIO, ZEnv, ZIO, ZIOAppArgs}
+
+import java.io.IOException
+import scala.util.Random
+
+// Anything that has a randomly generated
+// component is an effect
+
+def rollDice(): Int = Random.nextInt(6) + 1
+
+@main
+def randNumEx =
+  println(rollDice())
+  println(rollDice())
+
+def fullRound(): String =
+  val roll1 = rollDice()
+  val roll2 = rollDice()
+
+  (roll1, roll2) match
+    case (6, 6) =>
+      "Jackpot! Winner!"
+    case (1, 1) =>
+      "Snake eyes! Loser!"
+    case (_, _) =>
+      "Nothing interesting. Try again."
+
+@main
+def playUntilWinOrLoss() = println(fullRound())
+
+def rollDiceZ()
+    : ZIO[RandomBoundedInt, Nothing, Int] =
+  RandomBoundedInt.nextIntBetween(1, 7)
+
+import zio.ZIOApp
+import zio.{Tag, UIO, ZEnv, ZIOAppArgs, ZLayer}
+
+object randNumExZ extends ZIOApp:
+  type Environment = RandomBoundedInt
+
+  val layer: ZLayer[
+    ZIOAppArgs,
+    Any,
+    RandomBoundedInt
+  ] = RandomBoundedInt.live
+
+  val tag: Tag[RandomBoundedInt] =
+    Tag[RandomBoundedInt]
+  def run =
+    for
+      roll1 <- rollDiceZ()
+      roll2 <- rollDiceZ()
+      _     <- ZIO.debug(roll1)
+      _     <- ZIO.debug(roll2)
+    yield ()
+
+def fullRoundZ(): String =
+  val roll1 = rollDice()
+  val roll2 = rollDice()
+
+  (roll1, roll2) match
+    case (6, 6) =>
+      "Jackpot! Winner!"
+    case (1, 1) =>
+      "Snake eyes! Loser!"
+    case (_, _) =>
+      "Nothing interesting. Try again."
+
+```
+
 
 ### FakeRandom.scala
 ```scala
@@ -154,6 +232,59 @@ class FakeRandom(i: Int) extends Random:
   ): UIO[Collection[A]] = ???
 
 end FakeRandom
+
+```
+
+
+### RandomBoundedInt.scala
+```scala
+ // RandomBoundedInt.scala
+package random
+
+import zio.{Tag, UIO, ZEnv, ZIO, ZIOAppArgs}
+import scala.util.Random
+
+trait RandomBoundedInt:
+  def nextIntBetween(
+      minInclusive: Int,
+      maxExclusive: Int
+  ): UIO[Int] =
+    ZIO.succeed(
+      Random.between(minInclusive, maxExclusive)
+    )
+
+import zio.{UIO, ZIO, ZLayer}
+
+import scala.util.Random
+
+object RandomBoundedInt:
+  def nextIntBetween(
+      minInclusive: Int,
+      maxExclusive: Int
+  ): ZIO[RandomBoundedInt, Nothing, Int] =
+    ZIO.serviceWithZIO[RandomBoundedInt](
+      _.nextIntBetween(
+        minInclusive,
+        maxExclusive
+      )
+    )
+
+  val live
+      : ZLayer[Any, Nothing, RandomBoundedInt] =
+    ZLayer.succeed(
+      new RandomBoundedInt:
+        override def nextIntBetween(
+            minInclusive: Int,
+            maxExclusive: Int
+        ): UIO[Int] =
+          ZIO.succeed(
+            Random.between(
+              minInclusive,
+              maxExclusive
+            )
+          )
+    )
+end RandomBoundedInt
 
 ```
 
