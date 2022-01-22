@@ -224,9 +224,8 @@ unsafeRun(
  
  
 
-### FakeConsole.scala
+### experiments/src/main/scala/console/FakeConsole.scala
 ```scala
- // FakeConsole.scala
 package console
 
 import zio._

@@ -2,9 +2,8 @@
 
  
 
-### GrammartBot.scala
+### experiments/src/main/scala/grammar/GrammartBot.scala
 ```scala
- // GrammartBot.scala
 package grammar
 
 class GrammartBot {}

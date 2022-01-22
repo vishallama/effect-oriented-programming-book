@@ -9,9 +9,8 @@ TODO Come up with a few fun examples that differentiate our explanation from oth
  
  
 
-### STM.scala
+### experiments/src/main/scala/stm/STM.scala
 ```scala
- // STM.scala
 package stm
 import zio.stm.STM
 import zio.stm.TRef

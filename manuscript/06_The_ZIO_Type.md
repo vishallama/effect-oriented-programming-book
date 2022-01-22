@@ -60,60 +60,8 @@ def defaultGreeting()
  
  
 
-### FutureToZio.scala
+### experiments/src/main/scala/the_zio_type/EitherToZio.scala
 ```scala
- // FutureToZio.scala
-package the_zio_type
-
-import zio._
-
-import java.io
-import java.io.IOException
-import scala.concurrent.Future
-
-object FutureToZio extends ZIOAppDefault:
-
-  lazy val sFuture: Future[String] =
-    Future.successful("Success!")
-  // Future.failed(new Exception("Failure :("))
-
-  val run =
-    ZIO.fromFuture(implicit ec => sFuture)
-
-```
-
-
-### TryToZio.scala
-```scala
- // TryToZio.scala
-package the_zio_type
-
-import zio._
-import java.io
-import java.io.IOException
-import scala.util.Try
-
-object TryToZio extends ZIOAppDefault:
-  val dividend = 42
-  val divisor  = 7
-
-  // Significant Note: Try is a standard
-  // collection by-name function. This makes
-  // it a good candidate for introducting that
-  // concept.
-  def sTry: Try[Int] = Try(dividend / divisor)
-
-  val zTry: IO[Throwable, Int] =
-    ZIO.fromTry(sTry)
-
-  val run = zTry
-
-```
-
-
-### EitherToZio.scala
-```scala
- // EitherToZio.scala
 // EitherToZio.scala
 package the_zio_type
 
@@ -146,9 +94,30 @@ object EitherToZio extends ZIOAppDefault:
 ```
 
 
-### OptionToZio.scala
+### experiments/src/main/scala/the_zio_type/FutureToZio.scala
 ```scala
- // OptionToZio.scala
+package the_zio_type
+
+import zio._
+
+import java.io
+import java.io.IOException
+import scala.concurrent.Future
+
+object FutureToZio extends ZIOAppDefault:
+
+  lazy val sFuture: Future[String] =
+    Future.successful("Success!")
+  // Future.failed(new Exception("Failure :("))
+
+  val run =
+    ZIO.fromFuture(implicit ec => sFuture)
+
+```
+
+
+### experiments/src/main/scala/the_zio_type/OptionToZio.scala
+```scala
 package the_zio_type
 
 import java.io
@@ -164,6 +133,33 @@ class OptionToZio extends ZIOAppDefault:
     ZIO.fromOption(alias)
 
   val run = aliasZ
+
+```
+
+
+### experiments/src/main/scala/the_zio_type/TryToZio.scala
+```scala
+package the_zio_type
+
+import zio._
+import java.io
+import java.io.IOException
+import scala.util.Try
+
+object TryToZio extends ZIOAppDefault:
+  val dividend = 42
+  val divisor  = 7
+
+  // Significant Note: Try is a standard
+  // collection by-name function. This makes
+  // it a good candidate for introducting that
+  // concept.
+  def sTry: Try[Int] = Try(dividend / divisor)
+
+  val zTry: IO[Throwable, Int] =
+    ZIO.fromTry(sTry)
+
+  val run = zTry
 
 ```
 

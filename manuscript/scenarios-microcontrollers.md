@@ -2,9 +2,8 @@
 
  
 
-### Arduino.scala
+### experiments/src/main/scala/scenarios/microcontrollers/Arduino.scala
 ```scala
- // Arduino.scala
 package scenarios.microcontrollers
 
 import zio.Console.{readLine, printLine}

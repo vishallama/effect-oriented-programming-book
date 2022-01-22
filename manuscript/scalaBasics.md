@@ -2,64 +2,62 @@
 
  
 
-### map.scala
+### experiments/src/main/scala/scalaBasics/flatMap.scala
 ```scala
- // map.scala
 package scalaBasics
 
-object map:
+import scala.util.*
 
-  val nums    = Vector(0, 2, 1, 4, 3)
-  val letters = Vector('a', 'b', 'c', 'd', 'e')
+object flatMap {
+  // In its most basic sense, flatMap is the
+  // combination of
+  // the two functions map(), and flatten().
 
-  @main
-  def mapEx =
-    val combined =
-      nums.map(letters) // re-order letters
-    println(combined)
+  /* @main def flatMapEx =
+   * val nums =
+   * Seq(List(1,2,3),List(1,2,3),List(1,2,3))
+   *
+   * def addOne(num:Int): Int =
+   * num + 1
+   *
+   * println("\nFlat, then map: ") val flatWords
+   * = nums.flatten println(flatWords) val
+   * mappedFlatWords = flatWords.map(addOne)
+   * println(mappedFlatWords)
+   *
+   * println("\nflatMap: ") val flatMapped =
+   * nums.flatMap(addOne) println(flatMapped) */
+  /* //In Functional Programming, flatMap can be
+   * used in error handling.
+   * // Flat Map can behave like a Map() that can
+   * fail.
+   * //For example, when using Options:
+   *
+   * def map[B](f: A => B):Option[B] =
+   * this match { case None => None //If the
+   * object calling map is None, return None case
+   * Some(a) => Some(f(a)) //If the object
+   * calling map is something, return something
+   * holding f(something) } //Map calls f for
+   * each of it's item, then returns an Option
+   * for the whole list
+   *
+   * def flatMap[B](f: A => Option[B]):Option[B]
+   * this match { case None => None //If the
+   * object calling map is None, return None case
+   * Some(a) => f(a) //If the object calling map
+   * is something, return f(something) }
+   * //flatMap calls a function f that returns an
+   * Option //for each of the items. Then it
+   * returns the transformed list as an option. */
 
-    val comb2 =
-      nums.map(i =>
-        i -> letters(i)
-      ) // assign values of nums to letters
-    println(comb2)
+}
 
 ```
 
 
-### fpOption.scala
+### experiments/src/main/scala/scalaBasics/fold.scala
 ```scala
- // fpOption.scala
-// package scalaBasics
-
-// This implementation of the 'Option Type' shows
-// some of the FP style,
-// and use of higher order functions.
-/* class fpOption[+A] :
- * def map[B](f: A => B): Option[B] =
- * this match { case None => None case Some(a) =>
- * Some(f(a)) }
- *
- * def flatMap[B](f: A => Option[B]): Option[B] =
- * map(f) getOrElse None
- *
- * def getOrElse[B >: A](default: => B): B =
- * this match { case None => default case Some(a)
- * => a }
- *
- * def orElse[B >: A](ob: => Option[B]):
- * Option[B] =
- * this map (Some(_)) getOrElse ob
- *
- * def filter(f: A => Boolean): Option[A] =
- * flatMap( a => if (f(a)) Some(a) else None) */
-
-```
-
-
-### fold.scala
-```scala
- // fold.scala
 package scalaBasics
 
 object fold:
@@ -200,147 +198,8 @@ def foldEx5 =
 ```
 
 
-### flatMap.scala
+### experiments/src/main/scala/scalaBasics/forComprehension.scala
 ```scala
- // flatMap.scala
-package scalaBasics
-
-import scala.util.*
-
-object flatMap {
-  // In its most basic sense, flatMap is the
-  // combination of
-  // the two functions map(), and flatten().
-
-  /* @main def flatMapEx =
-   * val nums =
-   * Seq(List(1,2,3),List(1,2,3),List(1,2,3))
-   *
-   * def addOne(num:Int): Int =
-   * num + 1
-   *
-   * println("\nFlat, then map: ") val flatWords
-   * = nums.flatten println(flatWords) val
-   * mappedFlatWords = flatWords.map(addOne)
-   * println(mappedFlatWords)
-   *
-   * println("\nflatMap: ") val flatMapped =
-   * nums.flatMap(addOne) println(flatMapped) */
-  /* //In Functional Programming, flatMap can be
-   * used in error handling.
-   * // Flat Map can behave like a Map() that can
-   * fail.
-   * //For example, when using Options:
-   *
-   * def map[B](f: A => B):Option[B] =
-   * this match { case None => None //If the
-   * object calling map is None, return None case
-   * Some(a) => Some(f(a)) //If the object
-   * calling map is something, return something
-   * holding f(something) } //Map calls f for
-   * each of it's item, then returns an Option
-   * for the whole list
-   *
-   * def flatMap[B](f: A => Option[B]):Option[B]
-   * this match { case None => None //If the
-   * object calling map is None, return None case
-   * Some(a) => f(a) //If the object calling map
-   * is something, return f(something) }
-   * //flatMap calls a function f that returns an
-   * Option //for each of the items. Then it
-   * returns the transformed list as an option. */
-
-}
-
-```
-
-
-### usingMains.scala
-```scala
- // usingMains.scala
-package scalaBasics
-
-// This example will go over how to use the @main
-// notation
-
-object usingMains:
-
-  // Within a package, the compiler will analyze
-  // all of the executable
-  // functions, and select one of them as the
-  // 'main function'.
-  // Something useful that scala 3 does is to
-  // give the programmer the
-  // ability to define multiple main functions
-  // even within the same file.
-
-  @main
-  def main1() = println("I am main function 1!")
-
-  @main
-  def main2() = println("I am main function 2!")
-
-  // If a function has the @main tag before its
-  // definition,
-  // sbt will recognize it as a main function,
-  // and it will be seen
-  // as runnable.
-
-  // This is a great way to run specific
-  // functions, or combination of functions.
-
-  def foo(input: String) = print(input)
-
-  def bar = print("llo")
-
-  def f = println(" there!")
-
-  @main
-  def message =
-    val str = "He"
-    foo(str)
-    bar
-    f
-end usingMains
-
-```
-
-
-### tailEndRecursion.scala
-```scala
- // tailEndRecursion.scala
-package scalaBasics
-
-object tailEndRecursion:
-
-  // The Scala compiler will be able to optimize
-  // a recursive structure into byte code similar
-  // to a while loop if the recursive structure
-  // is a 'tail end' recursion.
-
-  def tailEndEx(num: Int): Int =
-    @annotation.tailrec
-    def fib(n: Int, a: Int, b: Int): Int =
-      if (n == 0)
-        a
-      else if (n == 1)
-        b
-      else
-        fib(n - 1, b, a + b)
-    fib(num, 0, 1)
-
-  @main
-  def fib6 =
-    val fib6 = tailEndEx(6) // Expected output: 8
-    println(fib6)
-end tailEndRecursion
-
-```
-
-
-### forComprehension.scala
-```scala
- // forComprehension.scala
 package scalaBasics
 
 object forComprehension:
@@ -499,6 +358,140 @@ end forComprehension
  * val kats = Box.observe.flatMap { kat1 =>
  * again(kat1).flatMap { kat2 => again(kat2).map
  * { kat3 => kat3 } } } */
+
+```
+
+
+### experiments/src/main/scala/scalaBasics/fpOption.scala
+```scala
+// package scalaBasics
+
+// This implementation of the 'Option Type' shows
+// some of the FP style,
+// and use of higher order functions.
+/* class fpOption[+A] :
+ * def map[B](f: A => B): Option[B] =
+ * this match { case None => None case Some(a) =>
+ * Some(f(a)) }
+ *
+ * def flatMap[B](f: A => Option[B]): Option[B] =
+ * map(f) getOrElse None
+ *
+ * def getOrElse[B >: A](default: => B): B =
+ * this match { case None => default case Some(a)
+ * => a }
+ *
+ * def orElse[B >: A](ob: => Option[B]):
+ * Option[B] =
+ * this map (Some(_)) getOrElse ob
+ *
+ * def filter(f: A => Boolean): Option[A] =
+ * flatMap( a => if (f(a)) Some(a) else None) */
+
+```
+
+
+### experiments/src/main/scala/scalaBasics/map.scala
+```scala
+package scalaBasics
+
+object map:
+
+  val nums    = Vector(0, 2, 1, 4, 3)
+  val letters = Vector('a', 'b', 'c', 'd', 'e')
+
+  @main
+  def mapEx =
+    val combined =
+      nums.map(letters) // re-order letters
+    println(combined)
+
+    val comb2 =
+      nums.map(i =>
+        i -> letters(i)
+      ) // assign values of nums to letters
+    println(comb2)
+
+```
+
+
+### experiments/src/main/scala/scalaBasics/tailEndRecursion.scala
+```scala
+package scalaBasics
+
+object tailEndRecursion:
+
+  // The Scala compiler will be able to optimize
+  // a recursive structure into byte code similar
+  // to a while loop if the recursive structure
+  // is a 'tail end' recursion.
+
+  def tailEndEx(num: Int): Int =
+    @annotation.tailrec
+    def fib(n: Int, a: Int, b: Int): Int =
+      if (n == 0)
+        a
+      else if (n == 1)
+        b
+      else
+        fib(n - 1, b, a + b)
+    fib(num, 0, 1)
+
+  @main
+  def fib6 =
+    val fib6 = tailEndEx(6) // Expected output: 8
+    println(fib6)
+end tailEndRecursion
+
+```
+
+
+### experiments/src/main/scala/scalaBasics/usingMains.scala
+```scala
+package scalaBasics
+
+// This example will go over how to use the @main
+// notation
+
+object usingMains:
+
+  // Within a package, the compiler will analyze
+  // all of the executable
+  // functions, and select one of them as the
+  // 'main function'.
+  // Something useful that scala 3 does is to
+  // give the programmer the
+  // ability to define multiple main functions
+  // even within the same file.
+
+  @main
+  def main1() = println("I am main function 1!")
+
+  @main
+  def main2() = println("I am main function 2!")
+
+  // If a function has the @main tag before its
+  // definition,
+  // sbt will recognize it as a main function,
+  // and it will be seen
+  // as runnable.
+
+  // This is a great way to run specific
+  // functions, or combination of functions.
+
+  def foo(input: String) = print(input)
+
+  def bar = print("llo")
+
+  def f = println(" there!")
+
+  @main
+  def message =
+    val str = "He"
+    foo(str)
+    bar
+    f
+end usingMains
 
 ```
 

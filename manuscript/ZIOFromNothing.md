@@ -2,9 +2,8 @@
 
  
 
-### XEnvironment.scala
+### experiments/src/main/scala/ZIOFromNothing/XEnvironment.scala
 ```scala
- // XEnvironment.scala
 package ZIOFromNothing
 
 class XEnvironment():
@@ -18,9 +17,8 @@ object XEnvironment:
 ```
 
 
-### ZIOFromScratch.scala
+### experiments/src/main/scala/ZIOFromNothing/ZIOFromScratch.scala
 ```scala
- // ZIOFromScratch.scala
 package ZIOFromNothing
 
 case class IO(behavior: () => Unit):

@@ -2,9 +2,8 @@
 
  
 
-### CalculatorExample.scala
+### experiments/src/main/scala/HelloZio/CalculatorExample.scala
 ```scala
- // CalculatorExample.scala
 package HelloZio
 
 import HelloZio.CalculatorExample.input

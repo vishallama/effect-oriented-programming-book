@@ -2,9 +2,77 @@
 
  
 
-### folding.scala
+### experiments/src/main/scala/handlingErrors/catching.scala
 ```scala
- // folding.scala
+package handlingErrors
+
+import zio.*
+import zio.Console.*
+import handlingErrors.file
+import java.io.IOException
+
+def standIn: ZIO[Console, IOException, Unit] =
+  printLine("Im a stand-in")
+
+object catching extends zio.ZIOAppDefault:
+
+  val logic = loadFile("TargetFile")
+
+  def run =
+    logic
+      .catchAll(_ =>
+        println("Error Caught")
+        loadBackupFile()
+      )
+      .exitCode
+
+// standIn.exitCode
+
+```
+
+
+### experiments/src/main/scala/handlingErrors/fallback.scala
+```scala
+package handlingErrors
+
+import zio.*
+import zio.Console
+import scala.util.Random
+// A useful way of dealing with errors is by
+// using the
+// `orElse()` method.
+
+case class file(name: String)
+
+def loadFile(fileName: String) =
+  if (Random.nextBoolean())
+    println("First Attempt Successful")
+    ZIO.succeed(file(fileName))
+  else
+    println("First Attemp Not Successful")
+    ZIO.fail("File not found")
+
+def loadBackupFile() =
+  println("Backup file used")
+  ZIO.succeed(file("BackupFile"))
+
+object fallback extends zio.ZIOAppDefault:
+
+  // orElse is a combinator that can be used to
+  // handle
+  // effects that can fail.
+
+  def run =
+    val loadedFile: UIO[file] =
+      loadFile("TargetFile")
+        .orElse(loadBackupFile())
+    loadedFile.exitCode
+
+```
+
+
+### experiments/src/main/scala/handlingErrors/folding.scala
+```scala
 package handlingErrors
 
 import zio.*
@@ -44,80 +112,8 @@ end folding
 ```
 
 
-### fallback.scala
+### experiments/src/main/scala/handlingErrors/value.scala
 ```scala
- // fallback.scala
-package handlingErrors
-
-import zio.*
-import zio.Console
-import scala.util.Random
-// A useful way of dealing with errors is by
-// using the
-// `orElse()` method.
-
-case class file(name: String)
-
-def loadFile(fileName: String) =
-  if (Random.nextBoolean())
-    println("First Attempt Successful")
-    ZIO.succeed(file(fileName))
-  else
-    println("First Attemp Not Successful")
-    ZIO.fail("File not found")
-
-def loadBackupFile() =
-  println("Backup file used")
-  ZIO.succeed(file("BackupFile"))
-
-object fallback extends zio.ZIOAppDefault:
-
-  // orElse is a combinator that can be used to
-  // handle
-  // effects that can fail.
-
-  def run =
-    val loadedFile: UIO[file] =
-      loadFile("TargetFile")
-        .orElse(loadBackupFile())
-    loadedFile.exitCode
-
-```
-
-
-### catching.scala
-```scala
- // catching.scala
-package handlingErrors
-
-import zio.*
-import zio.Console.*
-import handlingErrors.file
-import java.io.IOException
-
-def standIn: ZIO[Console, IOException, Unit] =
-  printLine("Im a stand-in")
-
-object catching extends zio.ZIOAppDefault:
-
-  val logic = loadFile("TargetFile")
-
-  def run =
-    logic
-      .catchAll(_ =>
-        println("Error Caught")
-        loadBackupFile()
-      )
-      .exitCode
-
-// standIn.exitCode
-
-```
-
-
-### value.scala
-```scala
- // value.scala
 package handlingErrors
 
 import zio.*

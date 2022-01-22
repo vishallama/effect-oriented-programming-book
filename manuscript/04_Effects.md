@@ -97,35 +97,8 @@ If the example were extremely specific (say, an interpreter that *only* knows ab
  
  
 
-### randomComponents.scala
+### experiments/src/main/scala/effects/CustomRandomZIO.scala
 ```scala
- // randomComponents.scala
-package effects
-
-import scala.util.Random
-
-object randomComponents:
-
-  // Anything that has a randomly generated
-  // component is an effect
-
-  def randNum: Unit =
-    val rand = Random.nextInt(100)
-    println(rand)
-
-  @main
-  def randNumEx =
-    randNum
-    randNum
-// These have the same input, yet different
-// outputs.
-
-```
-
-
-### CustomRandomZIO.scala
-```scala
- // CustomRandomZIO.scala
 package effects
 
 import zio.{
@@ -241,9 +214,8 @@ end demoStuff
 ```
 
 
-### IOVars.scala
+### experiments/src/main/scala/effects/IOVars.scala
 ```scala
- // IOVars.scala
 package effects
 
 object IOVars {
@@ -257,9 +229,8 @@ object IOVars {
 ```
 
 
-### mutableVars.scala
+### experiments/src/main/scala/effects/mutableVars.scala
 ```scala
- // mutableVars.scala
 package effects
 
 object mutableVars:
@@ -284,9 +255,33 @@ object mutableVars:
 ```
 
 
-### temporalVars.scala
+### experiments/src/main/scala/effects/randomComponents.scala
 ```scala
- // temporalVars.scala
+package effects
+
+import scala.util.Random
+
+object randomComponents:
+
+  // Anything that has a randomly generated
+  // component is an effect
+
+  def randNum: Unit =
+    val rand = Random.nextInt(100)
+    println(rand)
+
+  @main
+  def randNumEx =
+    randNum
+    randNum
+// These have the same input, yet different
+// outputs.
+
+```
+
+
+### experiments/src/main/scala/effects/temporalVars.scala
+```scala
 package effects
 
 import java.util.Calendar

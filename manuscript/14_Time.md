@@ -27,9 +27,8 @@ Example possibilities
  
  
 
-### ScheduledValues.scala
+### experiments/src/main/scala/time/ScheduledValues.scala
 ```scala
- // ScheduledValues.scala
 package time
 
 import zio.Duration

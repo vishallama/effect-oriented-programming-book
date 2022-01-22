@@ -2,9 +2,8 @@
 
  
 
-### FiberExamples.scala
+### experiments/src/main/scala/fibers/FiberExamples.scala
 ```scala
- // FiberExamples.scala
 package fibers
 
 import zio.Console

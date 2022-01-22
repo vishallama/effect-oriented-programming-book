@@ -2,9 +2,8 @@
 
  
 
-### ChainingVsComposing.scala
+### experiments/src/main/scala/atomic/realZIO/ChainingVsComposing.scala
 ```scala
- // ChainingVsComposing.scala
 package atomic.realZIO
 
 import zio.*

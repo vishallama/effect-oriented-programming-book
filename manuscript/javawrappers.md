@@ -2,9 +2,8 @@
 
  
 
-### InstantEOP.scala
+### experiments/src/main/scala/javawrappers/InstantEOP.scala
 ```scala
- // InstantEOP.scala
 package javawrappers
 
 import zio.duration2DurationOps

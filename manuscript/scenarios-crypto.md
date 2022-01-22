@@ -2,9 +2,8 @@
 
  
 
-### Mining.scala
+### experiments/src/main/scala/scenarios/crypto/Mining.scala
 ```scala
- // Mining.scala
 package scenarios.crypto
 
 import zio.Console.{printLine, readLine}

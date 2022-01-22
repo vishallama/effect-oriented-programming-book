@@ -2,9 +2,8 @@
 
  
 
-### ClockAndConsole.scala
+### experiments/src/main/scala/zio_intro/ClockAndConsole.scala
 ```scala
- // ClockAndConsole.scala
 package zio_intro
 
 import zio.{Ref, *}
@@ -244,9 +243,8 @@ end ClockAndConsoleImproved
 ```
 
 
-### FirstExample.scala
+### experiments/src/main/scala/zio_intro/FirstExample.scala
 ```scala
- // FirstExample.scala
 package zio_intro
 
 import zio.{Clock, ZIO, ZIOAppDefault, System}

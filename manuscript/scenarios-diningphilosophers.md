@@ -2,9 +2,8 @@
 
  
 
-### Philosophers.scala
+### experiments/src/main/scala/scenarios/diningphilosophers/Philosophers.scala
 ```scala
- // Philosophers.scala
 package scenarios.diningphilosophers
 
 /** Problem statement

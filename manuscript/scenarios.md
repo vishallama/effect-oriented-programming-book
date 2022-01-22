@@ -2,9 +2,187 @@
 
  
 
-### SecuritySystem.scala
+### experiments/src/main/scala/scenarios/CivilEngineering.scala
 ```scala
- // SecuritySystem.scala
+package scenarios
+
+import zio.ZIOAppArgs
+import zio.{ZIOAppDefault, ZIO}
+
+object CivilEngineering extends ZIOAppDefault:
+  trait Company[T]:
+    def produceBid(
+        projectSpecifications: ProjectSpecifications[
+          T
+        ]
+    ): ProjectBid[T]
+  object Companies:
+    def operatingIn[T](
+        state: State
+    ): ZIO[World, Nothing, AvailableCompanies[
+      T
+    ]] = ???
+
+  trait ProjectSpecifications[T]
+  trait LegalRestriction
+  case class War(reason: String)
+  trait UnfulfilledPromise
+  trait ProjectBid[T]
+
+  val run = ???
+
+  val installPowerLine = ???
+
+  case class AvailableCompanies[T](
+      companies: Set[Company[T]]
+  ):
+    def lowestBid(
+        projectSpecifications: ProjectSpecifications[
+          T
+        ]
+    ): ProjectBid[T] = ???
+
+  trait World
+  object World:
+    def legalRestrictionsFor(
+        state: State
+    ): ZIO[World, War, Set[LegalRestriction]] =
+      ???
+    def politiciansOf(
+        state: State
+    ): ZIO[World, War, Set[LegalRestriction]] =
+      ???
+
+  trait OutOfMoney
+
+  trait PrivatePropertyRefusal
+  def build[T](projectBid: ProjectBid[T]): ZIO[
+    Any,
+    UnfulfilledPromise |
+      OutOfMoney |
+      PrivatePropertyRefusal,
+    T
+  ] = ???
+
+  def stateBid[T](
+      state: State,
+      projectSpecifications: ProjectSpecifications[
+        T
+      ]
+  ): ZIO[
+    World,
+    War |
+      UnfulfilledPromise |
+      OutOfMoney |
+      PrivatePropertyRefusal,
+    T
+  ] =
+    for
+      availableCompanies <-
+        Companies.operatingIn[T](state)
+      legalRestrictions <-
+        World.legalRestrictionsFor(state)
+      politicians <- World.politiciansOf(state)
+      lowestBid =
+        availableCompanies
+          .lowestBid(projectSpecifications)
+      completedProject <- build(lowestBid)
+    yield completedProject
+end CivilEngineering
+
+enum State:
+  case TX, CO, CA
+
+def buildABridge() =
+  trait Company[T]
+  trait Surveyor
+  trait CivilEngineer
+  trait ProjectSpecifications
+  trait Specs[Service]
+  trait LegalRestriction
+
+  trait ProjectBid
+  trait InsufficientResources
+
+  def createProjectSpecifications(): ZIO[
+    Any,
+    LegalRestriction,
+    ProjectSpecifications
+  ] = ???
+
+  case class AvailableCompanies[T](
+      companies: Set[Company[T]]
+  )
+
+  trait Concrete
+  trait Steel
+  trait UnderWaterDrilling
+
+  trait ConstructionFirm:
+    def produceBid(
+        projectSpecifications: ProjectSpecifications
+    ): ZIO[AvailableCompanies[
+      Concrete
+    ] & AvailableCompanies[Steel] & AvailableCompanies[UnderWaterDrilling], InsufficientResources, ProjectBid]
+
+  trait NoValidBids
+
+  def chooseConstructionFirm(
+      firms: Set[ConstructionFirm]
+  ): ZIO[Any, NoValidBids, ConstructionFirm] =
+    ???
+end buildABridge
+
+```
+
+
+### experiments/src/main/scala/scenarios/PhonyZIO.scala
+```scala
+package atomic
+
+case class Schedule()
+
+trait ZIO[R, E, A]:
+  def map[B](f: A => B): ZIO[R, E, B] = ???
+
+  def flatMap[R2, E2, B](
+      f: A => ZIO[R2, E2, B]
+  ): ZIO[R, E, B] = ???
+
+  def retry(schedule: Schedule): ZIO[R, E, A] =
+    ???
+
+  def catchAll(
+      handler: (E => A)
+  ): ZIO[R, Nothing, A] = ???
+
+case class UIO[A]() extends ZIO[Any, Nothing, A]
+
+case class URIO[R, A]()
+    extends ZIO[R, Nothing, A]
+
+case class Task[A]()
+    extends ZIO[Any, Throwable, A]
+
+case class RIO[R, A]()
+    extends ZIO[R, Throwable, A]
+
+case class IO[E <: Throwable, A]()
+    extends ZIO[Any, E, A]
+
+object ZIO:
+
+  def apply[T](
+      body: => T
+  ): ZIO[Any, Nothing, T] = ???
+
+trait Has[A]
+
+```
+
+
+### experiments/src/main/scala/scenarios/SecuritySystem.scala
+```scala
 package scenarios
 
 import zio.{ZIO, ZLayer}
@@ -446,187 +624,6 @@ object SensorData:
       SensorD(scheduledValues[T](value, values*))
     )
 end SensorData
-
-```
-
-
-### CivilEngineering.scala
-```scala
- // CivilEngineering.scala
-package scenarios
-
-import zio.ZIOAppArgs
-import zio.{ZIOAppDefault, ZIO}
-
-object CivilEngineering extends ZIOAppDefault:
-  trait Company[T]:
-    def produceBid(
-        projectSpecifications: ProjectSpecifications[
-          T
-        ]
-    ): ProjectBid[T]
-  object Companies:
-    def operatingIn[T](
-        state: State
-    ): ZIO[World, Nothing, AvailableCompanies[
-      T
-    ]] = ???
-
-  trait ProjectSpecifications[T]
-  trait LegalRestriction
-  case class War(reason: String)
-  trait UnfulfilledPromise
-  trait ProjectBid[T]
-
-  val run = ???
-
-  val installPowerLine = ???
-
-  case class AvailableCompanies[T](
-      companies: Set[Company[T]]
-  ):
-    def lowestBid(
-        projectSpecifications: ProjectSpecifications[
-          T
-        ]
-    ): ProjectBid[T] = ???
-
-  trait World
-  object World:
-    def legalRestrictionsFor(
-        state: State
-    ): ZIO[World, War, Set[LegalRestriction]] =
-      ???
-    def politiciansOf(
-        state: State
-    ): ZIO[World, War, Set[LegalRestriction]] =
-      ???
-
-  trait OutOfMoney
-
-  trait PrivatePropertyRefusal
-  def build[T](projectBid: ProjectBid[T]): ZIO[
-    Any,
-    UnfulfilledPromise |
-      OutOfMoney |
-      PrivatePropertyRefusal,
-    T
-  ] = ???
-
-  def stateBid[T](
-      state: State,
-      projectSpecifications: ProjectSpecifications[
-        T
-      ]
-  ): ZIO[
-    World,
-    War |
-      UnfulfilledPromise |
-      OutOfMoney |
-      PrivatePropertyRefusal,
-    T
-  ] =
-    for
-      availableCompanies <-
-        Companies.operatingIn[T](state)
-      legalRestrictions <-
-        World.legalRestrictionsFor(state)
-      politicians <- World.politiciansOf(state)
-      lowestBid =
-        availableCompanies
-          .lowestBid(projectSpecifications)
-      completedProject <- build(lowestBid)
-    yield completedProject
-end CivilEngineering
-
-enum State:
-  case TX, CO, CA
-
-def buildABridge() =
-  trait Company[T]
-  trait Surveyor
-  trait CivilEngineer
-  trait ProjectSpecifications
-  trait Specs[Service]
-  trait LegalRestriction
-
-  trait ProjectBid
-  trait InsufficientResources
-
-  def createProjectSpecifications(): ZIO[
-    Any,
-    LegalRestriction,
-    ProjectSpecifications
-  ] = ???
-
-  case class AvailableCompanies[T](
-      companies: Set[Company[T]]
-  )
-
-  trait Concrete
-  trait Steel
-  trait UnderWaterDrilling
-
-  trait ConstructionFirm:
-    def produceBid(
-        projectSpecifications: ProjectSpecifications
-    ): ZIO[AvailableCompanies[
-      Concrete
-    ] & AvailableCompanies[Steel] & AvailableCompanies[UnderWaterDrilling], InsufficientResources, ProjectBid]
-
-  trait NoValidBids
-
-  def chooseConstructionFirm(
-      firms: Set[ConstructionFirm]
-  ): ZIO[Any, NoValidBids, ConstructionFirm] =
-    ???
-end buildABridge
-
-```
-
-
-### PhonyZIO.scala
-```scala
- // PhonyZIO.scala
-package atomic
-
-case class Schedule()
-
-trait ZIO[R, E, A]:
-  def map[B](f: A => B): ZIO[R, E, B] = ???
-
-  def flatMap[R2, E2, B](
-      f: A => ZIO[R2, E2, B]
-  ): ZIO[R, E, B] = ???
-
-  def retry(schedule: Schedule): ZIO[R, E, A] =
-    ???
-
-  def catchAll(
-      handler: (E => A)
-  ): ZIO[R, Nothing, A] = ???
-
-case class UIO[A]() extends ZIO[Any, Nothing, A]
-
-case class URIO[R, A]()
-    extends ZIO[R, Nothing, A]
-
-case class Task[A]()
-    extends ZIO[Any, Throwable, A]
-
-case class RIO[R, A]()
-    extends ZIO[R, Throwable, A]
-
-case class IO[E <: Throwable, A]()
-    extends ZIO[Any, E, A]
-
-object ZIO:
-
-  def apply[T](
-      body: => T
-  ): ZIO[Any, Nothing, T] = ???
-
-trait Has[A]
 
 ```
 

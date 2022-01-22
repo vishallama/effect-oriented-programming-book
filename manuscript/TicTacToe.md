@@ -2,9 +2,8 @@
 
  
 
-### TicTacToe.scala
+### experiments/src/main/scala/TicTacToe/TicTacToe.scala
 ```scala
- // TicTacToe.scala
 // From: https://scalac.io/blog/write-command-line-application-with-zio/
 package TicTacToe
 import zio.{Console, ZIOAppDefault, ZEnv, ZIO}
