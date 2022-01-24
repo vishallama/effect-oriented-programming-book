@@ -9,7 +9,54 @@ TODO Come up with a few fun examples that differentiate our explanation from oth
  
  
 
-### experiments/src/main/scala/stm/STM.scala
+### experiments/src/main/scala/stm/SimpleTransfers.scala
+```scala
+package stm
+
+import zio.Console.printLine
+import zio.stm.{STM, TRef}
+import zio.Runtime.default.unsafeRun
+
+def transfer(
+    from: TRef[Int],
+    to: TRef[Int],
+    amount: Int
+): STM[Throwable, Unit] =
+  for
+    senderBalance <- from.get
+    _ <-
+      if (amount > senderBalance)
+        STM.fail(
+          new Throwable("insufficient funds")
+        )
+      else
+        from.update(_ - amount) *>
+          to.update(_ + amount)
+  yield ()
+
+@main
+def stmDemo() =
+  val logic =
+    for
+      fromAccount <- TRef.make(100).commit
+      toAccount   <- TRef.make(0).commit
+      _ <-
+        transfer(fromAccount, toAccount, 20)
+          .commit
+      //      _ <- transferTransaction.commit
+      toAccountFinal <- toAccount.get.commit
+      _ <-
+        printLine(
+          "toAccountFinal: " + toAccountFinal
+        )
+    yield ()
+
+  unsafeRun(logic)
+
+```
+
+
+### experiments/src/main/scala/stm/TownResources.scala
 ```scala
 package stm
 import zio.stm.STM
@@ -31,6 +78,7 @@ sealed trait Resource[A]:
   def <=(other: Resource[A]): Boolean =
     value <= other.value
 
+// TODO Consider other names: Commodity
 case class TownResources(
     cash: Cash,
     lumber: Lumber,
@@ -126,16 +174,11 @@ def tradeResources[
     town2Offering: B
 ): STM[Throwable, Unit] =
   for
-    _ <-
-      sendResources(town1, town2, town1Offering)
-    _ <-
-      sendResources(town2, town1, town2Offering)
+    _ <- send(town1, town2, town1Offering)
+    _ <- send(town2, town1, town2Offering)
   yield ()
 
-def sendResources[
-    A <: Resource[A],
-    B <: Resource[B]
-](
+def send[A <: Resource[A], B <: Resource[B]](
     from: TRef[TownResources],
     to: TRef[TownResources],
     resource: A
@@ -162,42 +205,6 @@ def sendResources[
       )
     party2Balance <- to.get
   yield ()
-
-def transfer(
-    from: TRef[Int],
-    to: TRef[Int],
-    amount: Int
-): STM[Throwable, Unit] =
-  for
-    senderBalance <- from.get
-    _ <-
-      if (amount > senderBalance)
-        STM.fail(
-          new Throwable("insufficient funds")
-        )
-      else
-        from.update(_ - amount) *>
-          to.update(_ + amount)
-  yield ()
-
-@main
-def stmDemo() =
-  val logic =
-    for
-      fromAccount <- TRef.make(100).commit
-      toAccount   <- TRef.make(0).commit
-      _ <-
-        transfer(fromAccount, toAccount, 20)
-          .commit
-//      _ <- transferTransaction.commit
-      toAccountFinal <- toAccount.get.commit
-      _ <-
-        printLine(
-          "toAccountFinal: " + toAccountFinal
-        )
-    yield ()
-
-  unsafeRun(logic)
 
 ```
 

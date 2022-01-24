@@ -22,7 +22,14 @@ NOTE Moved code to `experiments/src/main/scala/random` due to dependency on code
 ```scala
 package random
 
-import zio.{Tag, UIO, ZEnv, ZIO, ZIOAppArgs}
+import zio.{
+  Tag,
+  UIO,
+  ZEnv,
+  ZIO,
+  ZIOAppArgs,
+  ZIOAppDefault
+}
 
 import java.io.IOException
 import scala.util.Random
@@ -86,6 +93,35 @@ val fullRoundZ
       "Snake eyes! Loser!"
     case (_, _) =>
       "Nothing interesting. Try again."
+
+// The problem above is that you can isolate the winner logic and adequately test the program. The next example is not so simple
+
+import zio.Ref
+
+case class GameState()
+
+val threeChances =
+  for
+    remainingChancesR <- Ref.make(3)
+    _ <-
+      (
+        for
+          roll <- rollDiceZ()
+          _    <- ZIO.debug(roll)
+          remainingChances <-
+            remainingChancesR.get
+          _ <-
+            remainingChancesR
+              .set(remainingChances - 1)
+        yield ()
+      ).repeatWhileZIO(x =>
+        remainingChancesR.get.map(_ > 0)
+      )
+  yield ()
+
+object ThreeChances extends ZIOAppDefault:
+  def run =
+    threeChances.provide(RandomBoundedInt.live)
 
 ```
 
