@@ -19,11 +19,9 @@ manuscript/ExperimentsSection.md
 resourcemanagement.md
 javawrappers.md
 zioBasics.md
-fpBuildingBlocks.md
 ZIOFromNothing.md
 scalaBasics.md
 Hubs.md
-directoryExample.md
 TicTacToe.md
 HelloZio.md
 scenarios-crypto.md
