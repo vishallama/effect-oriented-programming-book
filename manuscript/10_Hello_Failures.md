@@ -17,22 +17,25 @@ Temperature: 30 degrees
 class GpsException()     extends RuntimeException
 class NetworkException() extends RuntimeException
 
-def getTemperature(behavior: String): String =
-  if (behavior == "GPS Error")
+enum Demo:
+  case Success, NetworkError,GPSError  
+
+def getTemperature(behavior: Demo): String =
+  if (behavior == Demo.GPSError)
     throw new GpsException()
-  else if (behavior == "Network Error")
+  else if (behavior == Demo.NetworkError)
     throw new NetworkException()
   else
     "35 degrees"
 ```
 
 ```scala
-def displayTemperatureUnsafe(
-    behavior: String
+def currentTemperatureUnsafe(
+    behavior: Demo
 ): String =
   "Temperature: " + getTemperature(behavior)
 
-displayTemperatureUnsafe("succeed")
+currentTemperatureUnsafe(Demo.Success)
 // res0: String = "Temperature: 35 degrees"
 ```
 
@@ -42,18 +45,18 @@ This can take many forms.
 If we don't make any attempt to handle our problem, the whole program could blow up and show the gory details to the user.
 
 ```scala
-displayTemperatureUnsafe("Network Error")
+currentTemperatureUnsafe(Demo.NetworkError)
 // repl.MdocSession$App$NetworkException
-// 	at repl.MdocSession$App.getTemperature(10_Hello_Failures.md:17)
-// 	at repl.MdocSession$App.displayTemperatureUnsafe(10_Hello_Failures.md:27)
-// 	at repl.MdocSession$App.$init$$$anonfun$1(10_Hello_Failures.md:38)
+// 	at repl.MdocSession$App.getTemperature(10_Hello_Failures.md:21)
+// 	at repl.MdocSession$App.currentTemperatureUnsafe(10_Hello_Failures.md:31)
+// 	at repl.MdocSession$App.$init$$$anonfun$1(10_Hello_Failures.md:42)
 ```
 
 We could take the bare-minimum approach of catching the `Exception` and returning `null`:
 
 ```scala
-def displayTemperatureNull(
-    behavior: String
+def currentTemperatureNull(
+    behavior: Demo
 ): String =
   try
     "Temperature: " + getTemperature(behavior)
@@ -61,7 +64,7 @@ def displayTemperatureNull(
     case (ex: RuntimeException) =>
       "Temperature: " + null
 
-displayTemperatureNull("Network Error")
+currentTemperatureNull(Demo.NetworkError)
 // res1: String = "Temperature: null"
 ```
 
@@ -70,8 +73,8 @@ This is *slightly* better, as the user can at least see the outer structure of o
 Maybe we could fallback to a `sentinel` value, such as `0` or `-1` to indicate a failure?
 
 ```scala
-def displayTemperature(
-    behavior: String
+def currentTemperature(
+    behavior: Demo
 ): String =
   try
     "Temperature: " + getTemperature(behavior)
@@ -79,7 +82,7 @@ def displayTemperature(
     case (ex: RuntimeException) =>
       "Temperature: -1 degrees"
 
-displayTemperature("Network Error")
+currentTemperature(Demo.NetworkError)
 // res2: String = "Temperature: -1 degrees"
 ```
 
@@ -87,8 +90,8 @@ Clearly, this isn't acceptable, as both of these common sentinel values are vali
 We can take a more honest and accurate approach in this situation.
 
 ```scala
-def displayTemperature(
-    behavior: String
+def currentTemperature(
+    behavior: Demo
 ): String =
   try
     "Temperature: " + getTemperature(behavior)
@@ -96,7 +99,7 @@ def displayTemperature(
     case (ex: RuntimeException) =>
       "Temperature Unavailable"
 
-displayTemperature("Network Error")
+currentTemperature(Demo.NetworkError)
 // res3: String = "Temperature Unavailable"
 ```
 
@@ -106,8 +109,8 @@ In this situation, do we show the same message to the user? Ideally, we would sh
 The Network issue is transient, but the GPS problem is likely permanent.
 
 ```scala
-def displayTemperature(
-    behavior: String
+def currentTemperature(
+    behavior: Demo
 ): String =
   try
     "Temperature: " + getTemperature(behavior)
@@ -117,16 +120,16 @@ def displayTemperature(
     case (ex: GpsException) =>
       "GPS problem"
 
-displayTemperature("Network Error")
+currentTemperature(Demo.NetworkError)
 // res4: String = "Network Unavailable"
-displayTemperature("GPS Error")
+currentTemperature(Demo.GPSError)
 // res5: String = "GPS problem"
 ```
 
 Wonderful!
 We have specific messages for all relevant error cases. However, this still suffers from downsides that become more painful as the codebase grows.
 
-- The signature of `displayTemperature` does not alert us that it might fail
+- The signature of `currentTemperature` does not alert us that it might fail
 - If we realize it can fail, we must dig through the implementation to discover the multiple failure values
 
 ## ZIO Error Handling
@@ -144,26 +147,26 @@ TODO {{Update verbiage now that ZIO section is first}}
 import zio.ZIO
 import zio.Runtime.default.unsafeRun
 
-def getTemperatureZ(behavior: String): ZIO[
+def getTemperatureZ(behavior: Demo): ZIO[
   Any,
   GpsException | NetworkException,
   String
 ] =
-  if (behavior == "GPS Error")
+  if (behavior == Demo.GPSError)
     ZIO.fail(new GpsException())
-  else if (behavior == "Network Error")
+  else if (behavior == Demo.NetworkError)
     // TODO Use a non-exceptional error
     ZIO.fail(new NetworkException())
   else
     ZIO.succeed("30 degrees")
 
-unsafeRun(getTemperatureZ("Succeed"))
+unsafeRun(getTemperatureZ(Demo.Success))
 // res6: String = "30 degrees"
 ```
 
 ```scala
 unsafeRun(
-  getTemperatureZ("Succeed").catchAll {
+  getTemperatureZ(Demo.Success).catchAll {
     case ex: NetworkException =>
       ZIO.succeed("Network Unavailable")
   }
@@ -178,7 +181,7 @@ unsafeRun(
 TODO Demonstrate ZIO calculating the error types without an explicit annotation being provided
 
 ```scala
-unsafeRun(getTemperatureZ("GPS Error"))
+unsafeRun(getTemperatureZ(Demo.GPSError))
 // zio.FiberFailure: repl.MdocSession$App$GpsException
 ```
 
@@ -193,7 +196,7 @@ import zio.{Task, ZIO}
 
 ```scala
 def getTemperatureZWrapped(
-    behavior: String
+    behavior: Demo
 ): ZIO[Any, Throwable, String] =
   ZIO(getTemperature(behavior)).catchAll {
     case ex: NetworkException =>
@@ -204,13 +207,13 @@ def getTemperatureZWrapped(
 ```
 
 ```scala
-unsafeRun(getTemperatureZWrapped("Succeed"))
+unsafeRun(getTemperatureZWrapped(Demo.Success))
 // res8: String = "35 degrees"
 ```
 
 ```scala
 unsafeRun(
-  getTemperatureZWrapped("Network Error")
+  getTemperatureZWrapped(Demo.NetworkError)
 )
 // res9: String = "Network Unavailable"
 ```
@@ -219,7 +222,7 @@ This is decent, but does not provide the maximum possible guarantees. Look at wh
 
 ```scala
 def getTemperatureZGpsGap(
-    behavior: String
+    behavior: Demo
 ): ZIO[Any, Exception, String] =
   ZIO(getTemperature(behavior)).catchAll {
     case ex: NetworkException =>
@@ -231,11 +234,11 @@ import mdoc.unsafeRunTruncate
 ```scala
 import mdoc.unsafeRunTruncate
 unsafeRunTruncate(
-  getTemperatureZGpsGap("GPS Error")
+  getTemperatureZGpsGap(Demo.GPSError)
 )
 // Defect: class scala.MatchError
 //         GpsException
 ```
 
-The compiler does not catch this bug, and instead fails at runtime. Can we do better?
+The compiler does not catch this bug, and instead fails at runtime. 
 
