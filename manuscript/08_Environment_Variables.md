@@ -7,7 +7,7 @@ Environment Variables are a common way of providing dynamic and/or sensitive dat
 
 ```scala
 val apiKey = sys.env.get("API_KEY")
-// apiKey: Option[String] = Some("SECRET_API_KEY")
+// apiKey: Option[String] = Some(value = "SECRET_API_KEY")
 ```
 
 This seems rather innocuous; however, it can be an annoying source of problems as your project is built and deployed across different environments. Given this API:
@@ -57,7 +57,7 @@ When you look up an Environment Variable, you are accessing information that was
 ```scala
 fancyLodgingUnsafe(HotelApiImpl)
 // res0: Either[Error, Hotel] = Right(
-//   Hotel("Eddy's Roach Motel")
+//   value = Hotel(name = "Eddy's Roach Motel")
 // )
 ```
 
@@ -67,7 +67,7 @@ fancyLodgingUnsafe(HotelApiImpl)
 ```scala
 fancyLodgingUnsafe(HotelApiImpl)
 // res2: Either[Error, Hotel] = Left(
-//   Error("Invalid API Key")
+//   value = Error(msg = "Invalid API Key")
 // )
 ```
 
@@ -77,7 +77,9 @@ fancyLodgingUnsafe(HotelApiImpl)
 ```scala
 fancyLodgingUnsafe(HotelApiImpl)
 // res4: Either[Error, Hotel] = Left(
-//   Error("Unconfigured Environment")
+//   value = Error(
+//     msg = "Unconfigured Environment"
+//   )
 // )
 ```
 

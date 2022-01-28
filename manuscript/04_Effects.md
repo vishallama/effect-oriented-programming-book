@@ -67,7 +67,7 @@ def combine2(a: Int, b: Int): XIO[X, Int] =
   IntXIO(a + b + X.x)
 
 combine2(1, 2)
-// res2: XIO[X, Int] = IntXIO(6)
+// res2: XIO[X, Int] = IntXIO(i = 6)
 ```
 
 At first glance this doesn't seem to fix anything.

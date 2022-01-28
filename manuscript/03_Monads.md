@@ -152,7 +152,7 @@ We'll call `compose` with successive values of `stop` from `"a"` to `"d"`:
 compose("a")
 // check(a, a): Fail(a)
 // flatMap on Fail(a)
-// res0: Result = Fail("a")
+// res0: Result = Fail(why = "a")
 ```
 
 `check("a", stop, "")` immediately fails when `stop = "a"`, so the result returned from `check` is `Fail(a)`.
@@ -173,7 +173,7 @@ compose("b")
 // flatMap on Success(a)
 // check(b, b): Fail(ab)
 // flatMap on Fail(ab)
-// res1: Result = Fail("ab")
+// res1: Result = Fail(why = "ab")
 ```
 
 With `stop = "b"`, the first expression in the `for` comprehension is now successful.
@@ -188,7 +188,7 @@ compose("c")
 // flatMap on Success(ab)
 // check(c, c): Fail(abc)
 // map on Fail(abc)
-// res2: Result = Fail("abc")
+// res2: Result = Fail(why = "abc")
 ```
 
 Now we get all the way to the third expression in the `for` comprehension before it fails.
@@ -206,7 +206,7 @@ compose("d")
 // check(c, d): Success(abc)
 // map on Success(abc)
 // Yielding: abc + d
-// res3: Result = Success("abcd")
+// res3: Result = Success(data = "abcd")
 ```
 
 The return value of `check("c", stop, b)` is `Success(abc)` and this is used to initialize `c`.
@@ -412,7 +412,7 @@ val fc1 =
     b <- Right("B")
     c <- Right("C")
   yield s"Result: $a $b $c"
-// fc1: Either[Nothing, String] = Right("Result: A B C")
+// fc1: Either[Nothing, String] = Right(value = "Result: A B C")
 ```
 
 Because we never created a `Left`, Scala decided that the `Left` type should be `Nothing`.
@@ -430,7 +430,7 @@ val fc2 =
       Right("C").map(c => s"Result: $a $b $c")
     )
   )
-// fc2: Either[Nothing, String] = Right("Result: A B C")
+// fc2: Either[Nothing, String] = Right(value = "Result: A B C")
 ```
 
 The `for` comprehension left-arrow `<-` generates a call to `flatMap`.
@@ -459,9 +459,9 @@ X> Your output should look like this:
 
 ```scala
 solution5a
-// res9: Option[String] = Some("Result: A B C")
+// res9: Option[String] = Some(value = "Result: A B C")
 solution5b
-// res10: Option[String] = Some("Result: A B C")
+// res10: Option[String] = Some(value = "Result: A B C")
 ```
 
 ### Future
