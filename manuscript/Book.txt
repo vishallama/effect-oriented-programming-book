@@ -15,6 +15,7 @@
 14_Time.md
 15_Resources.md
 16_stm.md
+17_EnvironmentExploration.md
 manuscript/ExperimentsSection.md
 resourcemanagement.md
 javawrappers.md

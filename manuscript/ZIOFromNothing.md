@@ -2,7 +2,7 @@
 
  
 
-### experiments/src/main/scala/ZIOFromNothing/XEnvironment.scala
+### experiments/src/main/scala/ZIOFromNothing/ZIOFromScratch.scala
 ```scala
 package ZIOFromNothing
 
@@ -13,13 +13,6 @@ class XEnvironment():
 
 object XEnvironment:
   private var x: Int = 0
-
-```
-
-
-### experiments/src/main/scala/ZIOFromNothing/ZIOFromScratch.scala
-```scala
-package ZIOFromNothing
 
 case class IO(behavior: () => Unit):
   def compose(other: IO) =

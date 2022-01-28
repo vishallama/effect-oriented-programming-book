@@ -46,8 +46,7 @@ def fancyLodgingUnsafe(
 ): Either[Error, Hotel] =
   for
     apiKey <- envRequiredUnsafe("API_KEY")
-    hotel <-
-      hotelApi.cheapest("90210", apiKey)
+    hotel  <- hotelApi.cheapest("90210", apiKey)
   yield hotel
 ```
 
@@ -118,9 +117,7 @@ object System:
   def env(
       variable: => String
   ): ZIO[System, Nothing, Option[String]] =
-    ZIO.serviceWithZIO[System](
-      _.env(variable)
-    )
+    ZIO.serviceWithZIO[System](_.env(variable))
 ```
 
 Now if we use this code, our caller's type tells us that it requires a `System` to execute.
@@ -136,8 +133,7 @@ def fancyLodgingSafe()
         .mapError(_ =>
           Error("Unconfigured Environment")
         )
-  yield HotelApiImpl
-    .cheapest("90210", apiKey)
+  yield HotelApiImpl.cheapest("90210", apiKey)
 ```
 
 This is safe, but it is not the easiest code to read.
@@ -166,8 +162,7 @@ def fancyLodgingFocused()
     : ZIO[System, Error, Either[Error, Hotel]] =
   for
     apiKey <- envRequired("API_KEY")
-  yield HotelApiImpl
-    .cheapest("90210", apiKey)
+  yield HotelApiImpl.cheapest("90210", apiKey)
 ```
 
 Next, we flatten our two `Error` possibilities into the one failure channel.
@@ -179,8 +174,7 @@ def fancyLodgingSingleError()
     apiKey <- envRequired("API_KEY")
     hotel <-
       ZIO.fromEither(
-        HotelApiImpl
-          .cheapest("90210", apiKey)
+        HotelApiImpl.cheapest("90210", apiKey)
       )
   yield hotel
 ```
@@ -188,10 +182,7 @@ def fancyLodgingSingleError()
 Finally, we move our API ZIO-wrapping to a small function.
 
 ```scala
-def cheapestZ(
-    zipCode: String,
-    apiKey: String
-) =
+def cheapestZ(zipCode: String, apiKey: String) =
   ZIO.fromEither(
     HotelApiImpl.cheapest("90210", apiKey)
   )
@@ -217,8 +208,7 @@ def fancyLodgingUnsafe(
 ): Either[Error, Hotel] =
   for
     apiKey <- envRequiredUnsafe("API_KEY")
-    hotel <-
-      hotelApi.cheapest("90210", apiKey)
+    hotel  <- hotelApi.cheapest("90210", apiKey)
   yield hotel
 ```
 

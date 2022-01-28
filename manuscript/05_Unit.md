@@ -40,22 +40,16 @@ In practice this quickly becomes impossible.
 
 ```scala
 object OpenSourceLibrary:
-  def sendToService(
-      payload: String
-  ): Unit =
+  def sendToService(payload: String): Unit =
     println(s"NETWORK: Sending payload")
     save(payload)
 
-  private def save(
-      userData: String
-  ): Unit =
+  private def save(userData: String): Unit =
     Analytics.demographicsFrom(userData)
     println(s"DATABASE: Saving data")
 
 object Analytics:
-  def demographicsFrom(
-      userData: String
-  ): Unit =
+  def demographicsFrom(userData: String): Unit =
     println(s"LOGGER: Key demographic found")
 ```
 
@@ -63,9 +57,8 @@ object Analytics:
 ```scala
 def logic(): Unit =
   // ...Other calls...
-  OpenSourceLibrary.sendToService(
-    "Network Payload"
-  )
+  OpenSourceLibrary
+    .sendToService("Network Payload")
 // ...Other calls...
 
 logic()
