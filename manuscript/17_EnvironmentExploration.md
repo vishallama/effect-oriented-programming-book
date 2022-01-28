@@ -1,4 +1,7 @@
+# Environmental Exploration
+
 Explain and recreate the Environment parameter of ZIO.
+
 
 ## Automatically attached experiments.
  These are included at the end of this 
