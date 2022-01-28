@@ -15,12 +15,13 @@
 14_Time.md
 15_Resources.md
 16_stm.md
-17_EnvironmentExploration.md
-manuscript/ExperimentsSection.md
+17_Environmental_Exploration.md
+ExperimentsSection.md
 resourcemanagement.md
 javawrappers.md
 zioBasics.md
 ZIOFromNothing.md
+environmentexploration.md
 scalaBasics.md
 Hubs.md
 TicTacToe.md
