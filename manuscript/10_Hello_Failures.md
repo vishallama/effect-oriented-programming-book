@@ -230,8 +230,6 @@ import mdoc.unsafeRunTruncate
 unsafeRunTruncate(
   getTemperatureZGpsGap(Demo.GPSError)
 )
-// Defect: class scala.MatchError
-//         GpsException
 ```
 
 The compiler does not catch this bug, and instead fails at runtime. 
