@@ -229,8 +229,7 @@ val originalAuthorLayer =
 
 ```scala
 unsafeRunPrettyPrint(
-  fancyLodging
-    .provideLayer(originalAuthorLayer)
+  fancyLodging.provideLayer(originalAuthorLayer)
 )
 // Doing new stuff in here!
 ```
@@ -257,9 +256,11 @@ val colaboraterLayer =
 ```scala
 println("hi")
 // hi
-println(unsafeRunPrettyPrint(
-  fancyLodging.provideLayer(colaboraterLayer)
-))
+println(
+  unsafeRunPrettyPrint(
+    fancyLodging.provideLayer(colaboraterLayer)
+  )
+)
 // Doing new stuff in here!
 // ()
 println("Done")
@@ -287,8 +288,7 @@ val ciLayer =
 
 ```scala
 unsafeRunPrettyPrint(
-  fancyLodging
-    .provideLayer(ciLayer)
+  fancyLodging.provideLayer(ciLayer)
 )
 // Doing new stuff in here!
 ```
@@ -329,15 +329,9 @@ val testApiLayer =
 ```
 
 ```scala
-unsafeRun(
-  fancyLodging.provide(
-    testApiLayer
-  )
-)
-// error:
+unsafeRun(fancyLodging.provide(testApiLayer))
+// error: 
 // Cannot call macro class Hotel defined in the same source file
-//       .provide(
-//        ^^^^^^^
 ```
 
 ## Official ZIO Approach

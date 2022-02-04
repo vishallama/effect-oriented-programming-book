@@ -2,6 +2,56 @@
 
  
 
+### experiments/src/main/scala/environmentexploration/ToyEnvironment.scala
+```scala
+package environmentexploration
+
+case class DBService(url: String)
+
+// Yada yada yada lets talk about the environment
+trait ToyEnvironmentT[+R]:
+  def add[A](a: A): ToyEnvironment[R & A]
+  def get[A >: R](classA: Class[A]): A
+
+class ToyEnvironment[+R](
+    typeMap: Map[Class[_], Any]
+) extends ToyEnvironmentT[R]:
+  def add[A](a: A): ToyEnvironment[R & A] =
+    ToyEnvironment(typeMap + (a.getClass -> a))
+
+  def get[A >: R](classA: Class[A]): A =
+    typeMap(classA).asInstanceOf[A]
+
+@main
+def demoTypeMapInsertionAndRetrieval =
+  val env: ToyEnvironment[Any] =
+    ToyEnvironment[Any](Map.empty)
+
+  val env1: ToyEnvironment[Any & String] =
+    env.add("hi")
+
+  val env2: ToyEnvironment[
+    Any & String & DBService
+  ] = env1.add(DBService("blah"))
+
+  val env3: ToyEnvironment[
+    Any & String & DBService & List[String]
+  ] = env2.add(List("a", "b"))
+
+  println(env3.get(classOf[String]))
+  println(env3.get(classOf[DBService]))
+  // Blows up at runtime, because we can't
+  // actually cast generic types to concrete
+  // types
+  println(env3.get(classOf[List[String]]))
+
+// We get some amount of compile time safety here, but not much
+// println(env.get(classOf[List[DBService]]))
+end demoTypeMapInsertionAndRetrieval
+
+```
+
+
 ### experiments/src/main/scala/environmentexploration/TupledEnvironmentZio.scala
 ```scala
 package environmentexploration
@@ -77,36 +127,6 @@ def demoTupledEnvironment =
 end demoTupledEnvironment
 
 import zio.ZIO
-
-```
-
-
-### experiments/src/main/scala/environmentexploration/TypeMapEnvironment.scala
-```scala
-package environmentexploration
-
-import izumi.reflect.macrortti.LightTypeTag
-import zio.IsNotIntersection
-import izumi.reflect.Tag
-
-object TypeMapEnvironment:
-  val t: LightTypeTag = ???
-
-class TypeMapEnvironment[+R](
-    private val map: Map[LightTypeTag, Any]
-):
-  self =>
-  def add[A](a: A)(implicit
-      ev: IsNotIntersection[A],
-      tagged: Tag[A]
-  ): TypeMapEnvironment[R with A] =
-    new TypeMapEnvironment(
-      self.map + (taggedTagType(tagged) -> a)
-    )
-
-  def taggedTagType[A](
-      tagged: Tag[A]
-  ): LightTypeTag = tagged.tag
 
 ```
 

@@ -13,9 +13,9 @@
 12_New_Effects.md
 13_Location.md
 14_Time.md
-15_Resources.md
-16_stm.md
-17_Environment_Exploration.md
+15_Environment_Exploration.md
+16_Resources.md
+17_STM.md
 ExperimentsSection.md
 resourcemanagement.md
 javawrappers.md
