@@ -18,14 +18,13 @@
 17_STM.md
 ExperimentsSection.md
 resourcemanagement.md
-environmentexploration-opaque.md
 javawrappers.md
 zioBasics.md
 ZIOFromNothing.md
-environmentexploration.md
 scalaBasics.md
 Hubs.md
 TicTacToe.md
+environment_exploration-opaque.md
 HelloZio.md
 scenarios-crypto.md
 Parallelism.md
@@ -38,4 +37,3 @@ grammar.md
 scenarios-microcontrollers.md
 zio_intro.md
 scenarios-diningphilosophers.md
-environmentexploration-classtag.md
