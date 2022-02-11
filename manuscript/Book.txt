@@ -18,10 +18,14 @@
 17_STM.md
 ExperimentsSection.md
 resourcemanagement.md
+interpreter-level3.md
 javawrappers.md
 zioBasics.md
 ZIOFromNothing.md
+interpreter-level4.md
+interpreter-level1.md
 scalaBasics.md
+interpreter-level5.md
 Hubs.md
 TicTacToe.md
 environment_exploration-opaque.md
@@ -34,6 +38,7 @@ fibers.md
 atomic-realZIO.md
 prelude.md
 grammar.md
+interpreter-level2.md
 scenarios-microcontrollers.md
 zio_intro.md
 scenarios-diningphilosophers.md
