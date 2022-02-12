@@ -62,6 +62,7 @@ def stmDemo() =
 ### experiments/src/main/scala/stm/TownResources.scala
 ```scala
 package stm
+
 import zio.stm.STM
 import zio.stm.TRef
 import zio.Runtime.default.unsafeRun

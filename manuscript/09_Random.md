@@ -71,8 +71,7 @@ object RollTheDice extends ZIOAppDefault:
 
 val fullRoundZ
     : ZIO[RandomBoundedInt, Nothing, GameState] =
-  for
-    roll <- rollDiceZ
+  for roll <- rollDiceZ
   yield scoreRound(roll)
 
 // The problem above is that you can test the winner logic completely separate from the random number generator.
@@ -203,8 +202,7 @@ object RandomBoundedIntFake:
       values: Seq[Int]
   ): ZLayer[Any, Nothing, RandomBoundedInt] =
     (
-      for
-        valuesR <- Ref.make(values)
+      for valuesR <- Ref.make(values)
       yield new RandomBoundedIntFake(valuesR)
     ).toLayer
 

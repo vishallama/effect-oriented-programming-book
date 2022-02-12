@@ -15,7 +15,8 @@ case class Game(a: Player, b: Player)
 
 object ChatSlots extends zio.ZIOAppDefault:
   enum SlotState:
-    case Closed, Open
+    case Closed,
+      Open
 
   def run =
 
@@ -74,7 +75,8 @@ import zio.{Ref, ZIO, ZRef, ZManaged}
 
 object Trivial extends zio.ZIOAppDefault:
   enum ResourceState:
-    case Closed, Open
+    case Closed,
+      Open
 
   def run =
 

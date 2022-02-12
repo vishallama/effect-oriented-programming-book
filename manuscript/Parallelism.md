@@ -35,8 +35,7 @@ object BasicFibers:
   // computing the 100th digit of the Fibonacci
   // Sequence.
   val fib100: UIO[Fiber[Nothing, Long]] =
-    for
-      fiber <- computation.fib(100).fork
+    for fiber <- computation.fib(100).fork
     yield fiber
 
   // Part of the power of Fibers is that many of
@@ -169,8 +168,7 @@ object Finalizers extends zio.ZIOAppDefault:
         bufferedSource => // Use the bracket method with the finalizer defined above to define behavior on fail.
 
           val lines =
-            for
-              line <- bufferedSource.getLines
+            for line <- bufferedSource.getLines
             yield line
 
           if (
@@ -204,6 +202,7 @@ object Finalizers extends zio.ZIOAppDefault:
         )
       )
       .exitCode // Call the Zio with exitCode.
+  end run
 end Finalizers
 
 ```
@@ -224,8 +223,7 @@ class Interrupt:
   // This ZIO does nothing but count to n.
   // It is not productive, but it uses resources.
   val countToN: ZIO[Clock, Nothing, Unit] =
-    for
-      _ <- ZIO.sleep(n.seconds)
+    for _ <- ZIO.sleep(n.seconds)
     yield ()
 
   // This effect will create a fiber vrsion of

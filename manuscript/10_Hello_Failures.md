@@ -18,7 +18,9 @@ class GpsException()     extends RuntimeException
 class NetworkException() extends RuntimeException
 
 enum Demo:
-  case Success, NetworkError, GPSError
+  case Success,
+    NetworkError,
+    GPSError
 
 def getTemperature(behavior: Demo): String =
   if (behavior == Demo.GPSError)
@@ -47,9 +49,9 @@ If we don't make any attempt to handle our problem, the whole program could blow
 ```scala
 currentTemperatureUnsafe(Demo.NetworkError)
 // repl.MdocSession$App$NetworkException
-// 	at repl.MdocSession$App.getTemperature(10_Hello_Failures.md:21)
-// 	at repl.MdocSession$App.currentTemperatureUnsafe(10_Hello_Failures.md:31)
-// 	at repl.MdocSession$App.$init$$$anonfun$1(10_Hello_Failures.md:42)
+// 	at repl.MdocSession$App.getTemperature(10_Hello_Failures.md:23)
+// 	at repl.MdocSession$App.currentTemperatureUnsafe(10_Hello_Failures.md:33)
+// 	at repl.MdocSession$App.$init$$$anonfun$1(10_Hello_Failures.md:44)
 ```
 
 We could take the bare-minimum approach of catching the `Exception` and returning `null`:
