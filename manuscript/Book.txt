@@ -18,14 +18,13 @@
 17_STM.md
 ExperimentsSection.md
 resourcemanagement.md
-interpreter-level3.md
+interpreter-chaining_previous_result_and_environmental_dependency.md
 javawrappers.md
 zioBasics.md
+interpreter-level1_nochaining.md
 ZIOFromNothing.md
-interpreter-level4.md
-interpreter-level1.md
 scalaBasics.md
-interpreter-level5.md
+interpreter-level2_chaining.md
 Hubs.md
 TicTacToe.md
 environment_exploration-opaque.md
@@ -38,7 +37,7 @@ fibers.md
 atomic-realZIO.md
 prelude.md
 grammar.md
-interpreter-level2.md
 scenarios-microcontrollers.md
+interpreter-chaining_with_previous_result.md
 zio_intro.md
 scenarios-diningphilosophers.md
