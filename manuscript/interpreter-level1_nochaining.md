@@ -51,7 +51,11 @@ def interpretSequence(
 @main
 def demoSequence =
   val program =
-    Seq(Print("asdf"), Print("hello"))
+    Seq(
+      Print("asdf"),
+      Print("hello"),
+      Random(println)
+    )
 
   interpretSequence(program)
 

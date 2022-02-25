@@ -41,3 +41,4 @@ scenarios-microcontrollers.md
 interpreter-chaining_with_previous_result.md
 zio_intro.md
 scenarios-diningphilosophers.md
+interpreter-chaining_with_monads.md
