@@ -2,6 +2,118 @@
 
  
 
+### experiments/src/main/scala/handlingErrors/BadTypeManagement.scala
+```scala
+package handlingErrors
+
+import zio.ZIO
+
+object BadTypeManagement
+    extends zio.ZIOAppDefault:
+  val logic: ZIO[Any, Exception, String] =
+    for
+      _ <- ZIO.debug("ah")
+      result <-
+        failable(1).catchAll {
+          case ex: Exception =>
+            ZIO.fail(ex)
+          case ex: String =>
+            ZIO.succeed(
+              "recovered string error: " + ex
+            )
+        }
+      _ <- ZIO.debug(result)
+    yield result
+  def run = logic
+
+  def failable(
+      path: Int
+  ): ZIO[Any, Exception | String, String] =
+    if (path < 0)
+      ZIO.fail(new Exception("Negative path"))
+    else if (path > 0)
+      ZIO.fail("Too big")
+    else
+      ZIO.succeed("just right")
+end BadTypeManagement
+
+```
+
+
+### experiments/src/main/scala/handlingErrors/KeepSuccesses.scala
+```scala
+package handlingErrors
+
+import zio.ZIO
+
+object KeepSuccesses extends zio.ZIOAppDefault:
+  val allCalls =
+    List(
+      shoddyNetworkCall("a"),
+      shoddyNetworkCall("b"),
+      shoddyNetworkCall("large payload")
+    )
+  val logic =
+    ZIO.collectAllSuccesses(
+      allCalls.map(
+        _.tapError(e =>
+          zio.Console.printLine("Error: " + e)
+        )
+      )
+    )
+
+  val logicSpecific =
+    ZIO.collectAllWith(allCalls)(_.contains("a"))
+
+  def run =
+    for
+      results <- logic
+      _ <-
+        zio
+          .Console
+          .printLine(
+            results
+              .filter(_.contains("b"))
+              .mkString(",")
+          )
+    yield ()
+
+  def shoddyNetworkCall(input: String) =
+    if (input.length < 5)
+      ZIO.succeed("Good call: " + input)
+    else
+      ZIO.fail("Bad call: " + input)
+end KeepSuccesses
+
+```
+
+
+### experiments/src/main/scala/handlingErrors/OrDie.scala
+```scala
+package handlingErrors
+
+import zio.ZIO
+
+object OrDie extends zio.ZIOAppDefault:
+  val logic =
+    for _ <- failable(-1).orDie
+    yield ()
+
+  def run = logic
+
+  def failable(
+      path: Int
+  ): ZIO[Any, Exception, String] =
+    if (path < 0)
+      ZIO.fail(new Exception("Negative path"))
+//    else if (path > 0)
+//      ZIO.fail("Too big")
+    else
+      ZIO.succeed("just right")
+
+```
+
+
 ### experiments/src/main/scala/handlingErrors/catching.scala
 ```scala
 package handlingErrors
