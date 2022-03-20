@@ -24,25 +24,31 @@ object BasicHub extends zio.ZIOAppDefault:
     Hub
       .bounded[String](2)
       .flatMap { Hub =>
-        Hub
-          .subscribe
-          .zip(Hub.subscribe)
-          .use { case (left, right) =>
-            for
-              _ <-
-                Hub.publish(
-                  "This is from Hub left!"
-                )
-              _ <-
-                left
-                  .take
-                  .flatMap(Console.printLine(_))
-              _ <-
-                right
-                  .take
-                  .flatMap(Console.printLine(_))
-            yield ()
-          }
+        ZIO.scoped {
+          Hub
+            .subscribe
+            .zip(Hub.subscribe)
+            .flatMap { case (left, right) =>
+              for
+                _ <-
+                  Hub.publish(
+                    "This is from Hub left!"
+                  )
+                _ <-
+                  left
+                    .take
+                    .flatMap(
+                      Console.printLine(_)
+                    )
+                _ <-
+                  right
+                    .take
+                    .flatMap(
+                      Console.printLine(_)
+                    )
+              yield ()
+            }
+        }
       }
 
   /* case class entity(name:String) case class
@@ -118,7 +124,7 @@ object QuizGame extends zio.ZIOAppDefault:
     ) =
       ZIO
         .collectAllPar(
-          answers.map { case answer =>
+          answers.map { answer =>
             for
               _ <- ZIO.sleep(answer.delay)
               _ <- answerHub.publish(answer)
@@ -144,10 +150,8 @@ object QuizGame extends zio.ZIOAppDefault:
                   currentCorrectRespondents :+
                     answer.player
                 )
-            yield (
-              "Correct response from: " +
-                answer.player
-            )
+            yield "Correct response from: " +
+              answer.player
           else
             ZIO.succeed(
               "Incorrect response from: " +
@@ -240,7 +244,7 @@ object QuizGame extends zio.ZIOAppDefault:
           questionHub
             .subscribe
             .zip(answerHub.subscribe)
-            .use {
+            .flatMap {
               case (
                     questions,
                     answers: ZDequeue[
@@ -248,8 +252,7 @@ object QuizGame extends zio.ZIOAppDefault:
                       Nothing,
                       Answer
                     ]
-                  ) => {
-
+                  ) =>
                 def playARound(
                     roundDescription: RoundDescription
                 ) =
@@ -307,7 +310,6 @@ object QuizGame extends zio.ZIOAppDefault:
                   yield ()
 
                 ZIO.foreach(rounds)(playARound)
-              }
             }
       yield ()
 
@@ -337,44 +339,47 @@ object ReadIntAndMultiply
       for
         hub <- Hub.bounded[Int](2)
         _ <-
-          hub
-            .subscribe
-            .use { case hubSubscription =>
-              val getAndStoreInput =
-                for
-                  _ <-
-                    Console.printLine(
-                      "Please provide an int"
-                    )
-                  input <- Console.readLine
-                  nextInt = input.toInt
-                  _ <- hub.publish(nextInt)
-                yield ()
-
-              val processNextIntAndPrint =
-                for
-                  nextInt <- hubSubscription.take
-                  _ <-
-                    Console.printLine(
-                      "Multiplied Int: " +
-                        nextInt * 5
-                    )
-                yield ()
-
-              val reps = 5
-              for _ <-
-                  ZIO
-                    .collectAllPar(
-                      Set(
-                        getAndStoreInput
-                          .repeatN(reps),
-                        processNextIntAndPrint
-                          .forever
+          ZIO.scoped {
+            hub
+              .subscribe
+              .flatMap { hubSubscription =>
+                val getAndStoreInput =
+                  for
+                    _ <-
+                      Console.printLine(
+                        "Please provide an int"
                       )
-                    )
-                    .timeout(5.seconds)
-              yield ()
-            }
+                    input <- Console.readLine
+                    nextInt = input.toInt
+                    _ <- hub.publish(nextInt)
+                  yield ()
+
+                val processNextIntAndPrint =
+                  for
+                    nextInt <-
+                      hubSubscription.take
+                    _ <-
+                      Console.printLine(
+                        "Multiplied Int: " +
+                          nextInt * 5
+                      )
+                  yield ()
+
+                val reps = 5
+                for _ <-
+                    ZIO
+                      .collectAllPar(
+                        Set(
+                          getAndStoreInput
+                            .repeatN(reps),
+                          processNextIntAndPrint
+                            .forever
+                        )
+                      )
+                      .timeout(5.seconds)
+                yield ()
+              }
+          }
       yield ()
 
     (

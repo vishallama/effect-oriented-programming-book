@@ -7,11 +7,10 @@
 package Parallelism
 
 import java.io.IOException
-import zio.Console.{getStrLn, putStrLn}
 import zio.Console
 import zio.{Fiber, IO, Runtime, UIO, ZIO, ZLayer}
 
-object BasicFibers:
+object BasicFiber:
 
   // Fibers model a running IO: Fiber[E,A]. They
   // have an error type, and a success type.
@@ -22,12 +21,14 @@ object BasicFibers:
   object computation: // This object performs a computation that takes a long time. It is a recursive Fibonacci Sequence generator.
 
     def fib(n: Long): UIO[Long] =
-      UIO {
-        if (n <= 1)
-          UIO.succeed(n)
-        else
-          fib(n - 1).zipWith(fib(n - 2))(_ + _)
-      }.flatten
+      UIO
+        .succeed {
+          if (n <= 1)
+            UIO.succeed(n)
+          else
+            fib(n - 1).zipWith(fib(n - 2))(_ + _)
+        }
+        .flatten
 
   // Fork will take an effect, and split off a
   // Fiber version of it.
@@ -52,7 +53,7 @@ object BasicFibers:
       fiberN <- computation.fib(n).fork
       fiberM <- computation.fib(m).fork
     yield Vector(fiberN, fiberM)
-end BasicFibers
+end BasicFiber
 
 ```
 
@@ -156,14 +157,15 @@ object Finalizers extends zio.ZIOAppDefault:
 
   val readFileContents
       : ZIO[Any, Throwable, Vector[String]] =
-    ZIO(
-      scala
-        .io
-        .Source
-        .fromFile(
-          "src/main/scala/Parallelism/csvFile.csv"
-        )
-    ) // Open the file to read its contents
+    ZIO
+      .succeed(
+        scala
+          .io
+          .Source
+          .fromFile(
+            "src/main/scala/Parallelism/csvFile.csv"
+          )
+      ) // Open the file to read its contents
       .acquireReleaseWith(finalizer) {
         bufferedSource => // Use the bracket method with the finalizer defined above to define behavior on fail.
 
@@ -252,7 +254,6 @@ end Interrupt
 package Parallelism
 
 import java.io.IOException
-import zio.Console.{getStrLn, putStrLn}
 import zio.{Fiber, IO, Runtime, UIO, ZIO, ZLayer}
 
 class Join:
@@ -278,12 +279,14 @@ class Join:
   object computation:
 
     def fib(n: Long): UIO[Long] =
-      UIO {
-        if (n <= 1)
-          UIO.succeed(n)
-        else
-          fib(n - 1).zipWith(fib(n - 2))(_ + _)
-      }.flatten
+      UIO
+        .succeed {
+          if (n <= 1)
+            UIO.succeed(n)
+          else
+            fib(n - 1).zipWith(fib(n - 2))(_ + _)
+        }
+        .flatten
 end Join
 
 ```

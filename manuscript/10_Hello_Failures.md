@@ -228,7 +228,8 @@ TODO Demonstrate ZIO calculating the error types without an explicit annotation 
 
 ```scala
 unsafeRun(getTemperatureZ(Scenario.GPSError))
-// zio.FiberFailure: repl.MdocSession$App$GpsException
+// Exception in thread "zio-fiber-17" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
+// 	at repl.MdocSession$.App.<local App>.getTemperatureZ.macro(10_Hello_Failures.md:136)
 ```
 
 ### Wrapping Legacy Code
@@ -247,7 +248,7 @@ import zio.{Task, ZIO}
 def displayTemperatureZWrapped(
     behavior: Scenario
 ): ZIO[Any, Nothing, String] =
-  ZIO(displayTemperature(behavior)).catchAll {
+  ZIO.attempt(displayTemperature(behavior)).catchAll {
     case ex: NetworkException =>
       ZIO.succeed("Network Unavailable")
     case ex: GpsException =>
@@ -273,7 +274,7 @@ This is decent, but does not provide the maximum possible guarantees. Look at wh
 def getTemperatureZGpsGap(
     behavior: Scenario
 ): ZIO[Any, Nothing, String] =
-  ZIO(displayTemperature(behavior)).catchAll {
+  ZIO.attempt(displayTemperature(behavior)).catchAll {
     case ex: NetworkException =>
       ZIO.succeed("Network Unavailable")
   }
