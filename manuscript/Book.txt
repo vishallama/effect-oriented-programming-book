@@ -22,6 +22,7 @@ interpreter-chaining_previous_result_and_environmental_dependency.md
 javawrappers.md
 zioBasics.md
 interpreter-level1_nochaining.md
+bigdec.md
 ZIOFromNothing.md
 scalaBasics.md
 interpreter-level2_chaining.md
@@ -39,6 +40,7 @@ prelude.md
 grammar.md
 scenarios-microcontrollers.md
 interpreter-chaining_with_previous_result.md
+experiments-src-test-scala-bigdec.md
 zio_intro.md
 scenarios-diningphilosophers.md
 interpreter-chaining_with_monads.md
