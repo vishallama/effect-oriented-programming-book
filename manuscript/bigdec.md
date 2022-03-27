@@ -17,25 +17,25 @@ def inputBigDecimalValue(
     prompt: String,
     min: BigDecimal,
     max: BigDecimal
-): ZIO[Console, Exception, Unit] =
+): ZIO[Console, Exception, BigDecimal] =
   for
-    _ <- Console.printLine(prompt)
-    s <- Console.readLine
-    n <-
+    _     <- Console.printLine(prompt)
+    input <- Console.readLine
+    result <-
       ZIO
-        .attempt(BigDecimal(s))
+        .attempt(BigDecimal(input))
         .mapError(_ =>
           Exception("Invalid input.")
         )
     _ <-
-      ZIO.unless(min <= n && n <= max)(
+      ZIO.unless(min <= result && result <= max)(
         ZIO.fail(
           Exception(
             s"Input out of the range from $min to $max"
           )
         )
       )
-  yield ()
+  yield result
 
 object Main extends ZIOAppDefault:
   def run =
