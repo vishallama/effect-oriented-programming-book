@@ -58,8 +58,7 @@ object CivilEngineering extends ZIOAppDefault:
   trait PrivatePropertyRefusal
   def build[T](projectBid: ProjectBid[T]): ZIO[
     Any,
-    UnfulfilledPromise |
-      OutOfMoney |
+    UnfulfilledPromise | OutOfMoney |
       PrivatePropertyRefusal,
     T
   ] = ???
@@ -71,9 +70,7 @@ object CivilEngineering extends ZIOAppDefault:
       ]
   ): ZIO[
     World,
-    War |
-      UnfulfilledPromise |
-      OutOfMoney |
+    War | UnfulfilledPromise | OutOfMoney |
       PrivatePropertyRefusal,
     T
   ] =
@@ -123,9 +120,13 @@ def buildABridge() =
   trait ConstructionFirm:
     def produceBid(
         projectSpecifications: ProjectSpecifications
-    ): ZIO[AvailableCompanies[
-      Concrete
-    ] & AvailableCompanies[Steel] & AvailableCompanies[UnderWaterDrilling], InsufficientResources, ProjectBid]
+    ): ZIO[
+      AvailableCompanies[Concrete] &
+        AvailableCompanies[Steel] &
+        AvailableCompanies[UnderWaterDrilling],
+      InsufficientResources,
+      ProjectBid
+    ]
 
   trait NoValidBids
 
@@ -233,8 +234,7 @@ object SecuritySystem:
     Nothing,
     scenarios.MotionDetector &
       scenarios.ThermalDetectorX &
-      AcousticDetectorX &
-      SirenX
+      AcousticDetectorX & SirenX
   ] =
     MotionDetector.live ++
       ThermalDetectorX(
@@ -300,11 +300,8 @@ object SecuritySystem:
 
   def shouldAlertServices[
       T
-        <: MotionDetector &
-          ThermalDetectorX &
-          SirenX &
-          AcousticDetectorX &
-          Clock
+        <: MotionDetector & ThermalDetectorX &
+          SirenX & AcousticDetectorX & Clock
   ](): ZIO[
     T,
     scenarios.HardwareFailure | TimeoutException,
