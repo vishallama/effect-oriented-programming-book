@@ -4,12 +4,12 @@ This is going to be a tough one.
 
 
 ## Automatically attached experiments.
- These are included at the end of this 
+ These are included at the end of this
  chapter because their package in the
  experiments directory matched the name
  of this chapter. Enjoy working on the
  code with full editor capabilities :D
- 
+
  
 
 ### experiments/src/main/scala/stm/SimpleTransfers.scala
