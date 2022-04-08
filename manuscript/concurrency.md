@@ -20,7 +20,8 @@ import zio.{
   Console,
   Duration,
   ZIO,
-  ZIOAppDefault
+  ZIOAppDefault,
+  Random
 }
 
 def sleepThenPrint(d: Duration): ZIO[
@@ -82,6 +83,34 @@ object CollectAllParDemo
       _ <- Console.printLine(total)
     yield ()
 end CollectAllParDemo
+
+object CollectAllParMassiveDemo
+    extends zio.ZIOAppDefault:
+  override def run =
+    for
+      durations <-
+        ZIO.collectAllSuccessesPar(
+          Seq
+            .fill(1_000_000)(1.seconds)
+            .map(duration =>
+              for
+                randInt <-
+                  Random.nextIntBetween(0, 100)
+                _ <- ZIO.sleep(duration)
+                _ <-
+                  ZIO.when(randInt < 10)(
+                    ZIO.fail("Number is too low")
+                  )
+              yield duration
+            )
+        )
+      total =
+        durations
+          .fold(Duration.Zero)(_ + _)
+          .render
+      _ <- Console.printLine(total)
+    yield ()
+end CollectAllParMassiveDemo
 
 ```
 
