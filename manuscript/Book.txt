@@ -32,6 +32,7 @@ environment_exploration-opaque.md
 HelloZio.md
 scenarios-crypto.md
 Parallelism.md
+game_theory.md
 scenarios.md
 handlingErrors.md
 fibers.md
