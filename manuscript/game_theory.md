@@ -15,7 +15,45 @@ import game_theory.Outcome.{
 import zio.Console.printLine
 import zio.*
 
-case class Prisoner(name: String)
+case class Decision(
+    prisoner: Prisoner,
+    action: Action
+)
+case class RoundResult(
+    prisoner1Decision: Decision,
+    prisoner2Decision: Decision
+)
+case class DecisionHistory(
+    results: List[RoundResult]
+)
+
+trait Strategy:
+  def decide(
+      decisionHistory: DecisionHistory
+  ): ZIO[Any, Nothing, Action]
+
+case class Prisoner(
+    name: String,
+    strategy: Strategy
+):
+  def decide(
+      decisionHistory: DecisionHistory
+  ): ZIO[Any, Nothing, Action] =
+    strategy.decide(decisionHistory)
+
+val alwaysBetray =
+  new Strategy:
+    override def decide(
+        decisionHistory: DecisionHistory
+    ): ZIO[Any, Nothing, Action] =
+      ZIO.succeed(Betray)
+
+val alwaysTrust =
+  new Strategy:
+    override def decide(
+        decisionHistory: DecisionHistory
+    ): ZIO[Any, Nothing, Action] =
+      ZIO.succeed(Silent)
 
 enum Action:
   case Silent
@@ -27,13 +65,14 @@ enum Outcome:
   case OnePrison(prisoner: Prisoner)
 
 object SingleBasic extends ZIOAppDefault:
-  val bruce = Prisoner("Bruce")
-  val bill  = Prisoner("Bill")
+  val bruce = Prisoner("Bruce", alwaysBetray)
+  val bill  = Prisoner("Bill", alwaysTrust)
 
   trait DecisionService:
-    def getDecisionFor(
-        prisoner: Prisoner
-    ): ZIO[Clock, String, Action]
+    def getDecisionsFor(
+        prisoner1: Prisoner,
+        prisoner2: Prisoner
+    ): ZIO[Clock, String, RoundResult]
 
   def play(
       prisoner1: Prisoner,
@@ -46,16 +85,15 @@ object SingleBasic extends ZIOAppDefault:
     for
       decisionService <-
         ZIO.service[DecisionService]
-      decisions <-
+      roundResult <-
         decisionService
-          .getDecisionFor(prisoner1)
-          .zipPar(
-            decisionService
-              .getDecisionFor(prisoner2)
-          )
+          .getDecisionsFor(prisoner1, prisoner2)
 
       outcome =
-        decisions match
+        (
+          roundResult.prisoner1Decision.action,
+          roundResult.prisoner2Decision.action
+        ) match
           case (Silent, Silent) =>
             BothFree
           case (Betray, Silent) =>
@@ -66,38 +104,61 @@ object SingleBasic extends ZIOAppDefault:
             BothPrison
     yield outcome
 
-  val basicHardcodedService =
-    ZLayer.succeed(
-      new DecisionService:
-        def getDecisionFor(
-            prisoner: Prisoner
-        ): ZIO[Clock, String, Action] =
-          (
-            if (prisoner == bruce)
-              ZIO.succeed(Silent)
-            else if (prisoner == bill)
-              ZIO.sleep(4.seconds) *>
-                ZIO.succeed(Betray)
-            else
-              ZIO.fail("Unknown prisoner")
-          ).debug(prisoner.name)
-    )
+  class LiveDecisionService(
+      history: Ref[DecisionHistory]
+  ) extends DecisionService:
+    private def getDecisionFor(
+        prisoner: Prisoner
+    ): ZIO[Clock, String, Decision] =
+      for
+        currentHistory <- history.get
+        action <- prisoner.decide(currentHistory)
+      yield Decision(prisoner, action)
 
-  val everybodyIsAnAsshole =
-    ZLayer.succeed(
-      new DecisionService:
-        def getDecisionFor(
-            prisoner: Prisoner
-        ): ZIO[Clock, String, Action] =
-          ZIO.succeed(Betray)
-    )
+    def getDecisionsFor(
+        prisoner1: Prisoner,
+        prisoner2: Prisoner
+    ): ZIO[Clock, String, RoundResult] =
+      for
+        decisions <-
+          getDecisionFor(prisoner1)
+            .zipPar(getDecisionFor(prisoner2))
+        roundResult =
+          RoundResult(decisions._1, decisions._2)
+        _ <-
+          history
+            .updateAndGet(oldHistory =>
+              DecisionHistory(
+                roundResult :: oldHistory.results
+              )
+            )
+            .debug
+      yield roundResult
+  end LiveDecisionService
+
+  object LiveDecisionService:
+    def make(): ZIO[
+      Any,
+      Nothing,
+      LiveDecisionService
+    ] =
+      for history <-
+          Ref.make(DecisionHistory(List.empty))
+      yield LiveDecisionService(history)
+
+  val liveDecisionService: ZLayer[
+    Any,
+    Nothing,
+    LiveDecisionService
+  ] = ZLayer.fromZIO(LiveDecisionService.make())
 
   def run =
     play(bruce, bill)
+      .repeatN(2)
       .debug
       .provideSomeLayer[Clock](
         //        basicHardcodedService
-        everybodyIsAnAsshole
+        liveDecisionService
       )
 end SingleBasic
 
