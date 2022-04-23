@@ -16,13 +16,10 @@ Consider an Evolutionary example, where a `Cause` allows us to track MutationExc
 ```scala
 package cause
 
-import zio.ZEnv
-import zio.ZIO
+import zio.{ZEnv, ZIO, ZIOAppDefault}
 
-object MalcomInTheMiddle extends zio.App:
-  def run(
-      args: List[String]
-  ): zio.URIO[ZEnv, zio.ExitCode] =
+object MalcomInTheMiddle extends ZIOAppDefault:
+  def run =
 
     def turnOnLights() = ???
     class BurntBulb() extends Exception
@@ -118,8 +115,7 @@ object Timeline extends zio.ZIOAppDefault:
         printLine(cause.defects)
       }
 
-  def run: zio.URIO[ZEnv, zio.ExitCode] =
-    timeline.exitCode
+  def run = timeline.exitCode
 end Timeline
 
 ```

@@ -204,7 +204,6 @@ unsafeRunPrettyPrint(
   ZIO.debug("ping") *>
     ConsoleLive.printLine("Normal logic")
 )
-// Doing new stuff in here!
 // ping
 // Normal logic
 // Res: ()

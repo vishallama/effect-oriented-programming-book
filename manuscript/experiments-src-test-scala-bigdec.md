@@ -7,6 +7,7 @@
 package bigdec
 
 import zio.ZIO
+import zio.test.ZIOSpecDefault
 import zio.test.Assertion.{
   diesWithA,
   equalTo,
@@ -25,7 +26,7 @@ import zio.test.{
 }
 import zio.test.TestAspect.silent
 
-object MainSpec extends DefaultRunnableSpec:
+object MainSpec extends ZIOSpecDefault:
   def spec =
     suite("MainSpec")(
       test("must succeed with valid value") {

@@ -261,7 +261,6 @@ unsafeRunPrettyPrint(
       originalAuthor
   )
 )
-// Doing new stuff in here!
 ```
 
 **Collaborator's Machine:**
@@ -281,7 +280,6 @@ unsafeRunPrettyPrint(
       collaborater
   )
 )
-// Doing new stuff in here!
 ```
 
 **Continuous Integration Server:**
@@ -297,7 +295,6 @@ unsafeRunPrettyPrint(
     System.live >>> SystemStrict.live >+> ci
   )
 )
-// Doing new stuff in here!
 ```
 
 TODO{{The actual line looks the same, which I highlighted as a problem before. How should we indicate that the Environment is different?}}

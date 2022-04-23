@@ -72,16 +72,12 @@ object SingleBasic extends ZIOAppDefault:
     def getDecisionsFor(
         prisoner1: Prisoner,
         prisoner2: Prisoner
-    ): ZIO[Clock, String, RoundResult]
+    ): ZIO[Any, String, RoundResult]
 
   def play(
       prisoner1: Prisoner,
       prisoner2: Prisoner
-  ): ZIO[
-    DecisionService with Clock,
-    String,
-    Outcome
-  ] =
+  ): ZIO[DecisionService, String, Outcome] =
     for
       decisionService <-
         ZIO.service[DecisionService]
@@ -109,7 +105,7 @@ object SingleBasic extends ZIOAppDefault:
   ) extends DecisionService:
     private def getDecisionFor(
         prisoner: Prisoner
-    ): ZIO[Clock, String, Decision] =
+    ): ZIO[Any, String, Decision] =
       for
         currentHistory <- history.get
         action <- prisoner.decide(currentHistory)
@@ -118,7 +114,7 @@ object SingleBasic extends ZIOAppDefault:
     def getDecisionsFor(
         prisoner1: Prisoner,
         prisoner2: Prisoner
-    ): ZIO[Clock, String, RoundResult] =
+    ): ZIO[Any, String, RoundResult] =
       for
         decisions <-
           getDecisionFor(prisoner1)
@@ -156,7 +152,7 @@ object SingleBasic extends ZIOAppDefault:
     play(bruce, bill)
       .repeatN(2)
       .debug
-      .provideSomeLayer[Clock](
+      .provideLayer(
         //        basicHardcodedService
         liveDecisionService
       )

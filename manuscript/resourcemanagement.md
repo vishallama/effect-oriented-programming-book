@@ -7,7 +7,7 @@
 package resourcemanagement
 
 import zio.Console.printLine
-import zio.{Ref, ZIO, ZRef}
+import zio.{Ref, ZIO}
 
 case class Slot(id: String)
 case class Player(name: String, slot: Slot)
@@ -39,7 +39,7 @@ object ChatSlots extends zio.ZIOAppDefault:
 
     for
       ref <-
-        ZRef.make[SlotState](SlotState.Closed)
+        Ref.make[SlotState](SlotState.Closed)
       managed =
         ZIO.acquireRelease(acquire(ref))(_ =>
           release(ref)
@@ -73,7 +73,7 @@ end ChatSlots
 package resourcemanagement
 
 import zio.Console
-import zio.{Ref, ZIO, ZRef}
+import zio.{Ref, ZIO}
 
 object Trivial extends zio.ZIOAppDefault:
   enum ResourceState:
@@ -114,7 +114,7 @@ object Trivial extends zio.ZIOAppDefault:
     // & release logic.
     for
       ref <-
-        ZRef.make[ResourceState](
+        Ref.make[ResourceState](
           ResourceState.Closed
         )
       managed =

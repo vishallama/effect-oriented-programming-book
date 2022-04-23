@@ -185,7 +185,7 @@ object Finalizers extends zio.ZIOAppDefault:
     println("In main")
 
     val ioExample: ZIO[
-      Console,
+      Any,
       Throwable,
       Unit
     ] = // Define the ZIO contexts

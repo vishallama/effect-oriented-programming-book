@@ -17,7 +17,7 @@ def inputBigDecimalValue(
     prompt: String,
     min: BigDecimal,
     max: BigDecimal
-): ZIO[Console, Exception, BigDecimal] =
+): ZIO[Any, Exception, BigDecimal] =
   for
     _     <- Console.printLine(prompt)
     input <- Console.readLine

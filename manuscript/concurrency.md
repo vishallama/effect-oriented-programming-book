@@ -24,11 +24,9 @@ import zio.{
   Random
 }
 
-def sleepThenPrint(d: Duration): ZIO[
-  Clock & Console,
-  java.io.IOException,
-  Duration
-] =
+def sleepThenPrint(
+    d: Duration
+): ZIO[Any, java.io.IOException, Duration] =
   for
     _ <- ZIO.sleep(d)
     _ <-
