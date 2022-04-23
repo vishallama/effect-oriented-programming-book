@@ -137,7 +137,7 @@ trait SystemStrict:
 object SystemStrict:
   val live
       : ZLayer[System, Nothing, SystemStrict] =
-    ZIO.service[System].map(Live(_)).toLayer
+    ZLayer.fromZIO(ZIO.service[System].map(Live(_)))
 
   def envRequired(
       variable: String
@@ -200,10 +200,11 @@ object HotelApiZ:
     Nothing,
     HotelApiZ
   ] =
-    ZIO
-      .service[SystemStrict]
-      .map(Live(_))
-      .toLayer
+      ZLayer.fromZIO(
+        ZIO
+          .service[SystemStrict]
+          .map(Live(_))
+          )
 end HotelApiZ
 ```
 This helps us keep a flat `Error` channel when we write our domain logic.
