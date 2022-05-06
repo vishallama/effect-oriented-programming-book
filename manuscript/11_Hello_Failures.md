@@ -4,10 +4,8 @@ If you are not interested in the discouraged ways to handle errors, and just wan
 [ZIO Error Handling](#zio-error-handling)
 
 ## Historic approaches to Error-handling
-
-There are distinct levels of problems in any given program. They require different types of handling by the programmer. Imagine a program that displays the local temperature the user based on GPS position and a network call.
-
-TODO Show success/failure for all versions
+In the past, some programs have thrown exceptions to indicate failures.
+Imagine a program that displays the local temperature the user based on GPS position and a network call. There are distinct levels of problems in any given program. They require different types of handling by the programmer.
 
 ```text
 Temperature: 30 degrees
@@ -17,51 +15,59 @@ Temperature: 30 degrees
 class GpsException()     extends RuntimeException
 class NetworkException() extends RuntimeException
 
-def getTemperature(behavior: String): String =
-  if (behavior == "GPS Error")
+enum Scenario:
+  case Success,
+    NetworkError,
+    GPSError
+
+def displayTemperature(
+    behavior: Scenario
+): String =
+  if (behavior == Scenario.GPSError)
     throw new GpsException()
-  else if (behavior == "Network Error")
+  else if (behavior == Scenario.NetworkError)
     throw new NetworkException()
   else
     "35 degrees"
 ```
 
 ```scala
-def displayTemperatureUnsafe(
-    behavior: String
+def currentTemperatureUnsafe(
+    behavior: Scenario
 ): String =
-  "Temperature: " + getTemperature(behavior)
+  "Temperature: " + displayTemperature(behavior)
 
-displayTemperatureUnsafe("succeed")
+currentTemperatureUnsafe(Scenario.Success)
 // res0: String = "Temperature: 35 degrees"
 ```
 
 On the happy path, everything looks as desired.
 If the network is unavailable, what is the behavior for the caller?
 This can take many forms.
-If we don't make any attempt to handle our problem, the whole program could blow up and show the gory details to the user.
+If we don't make any attempt to handle our problem, the whole program blows up and shows the gory details to the user.
 
 ```scala
-displayTemperatureUnsafe("Network Error")
+currentTemperatureUnsafe(Scenario.NetworkError)
 // repl.MdocSession$App$NetworkException
-// 	at repl.MdocSession$App.getTemperature(11_Hello_Failures.md:17)
-// 	at repl.MdocSession$App.displayTemperatureUnsafe(11_Hello_Failures.md:27)
-// 	at repl.MdocSession$App.$init$$$anonfun$1(11_Hello_Failures.md:38)
+// 	at repl.MdocSession$App.displayTemperature(11_Hello_Failures.md:25)
+// 	at repl.MdocSession$App.currentTemperatureUnsafe(11_Hello_Failures.md:35)
+// 	at repl.MdocSession$App.$init$$$anonfun$1(11_Hello_Failures.md:46)
 ```
 
 We could take the bare-minimum approach of catching the `Exception` and returning `null`:
 
 ```scala
-def displayTemperatureNull(
-    behavior: String
+def currentTemperatureNull(
+    behavior: Scenario
 ): String =
   try
-    "Temperature: " + getTemperature(behavior)
+    "Temperature: " +
+      displayTemperature(behavior)
   catch
     case (ex: RuntimeException) =>
       "Temperature: " + null
 
-displayTemperatureNull("Network Error")
+currentTemperatureNull(Scenario.NetworkError)
 // res1: String = "Temperature: null"
 ```
 
@@ -70,16 +76,17 @@ This is *slightly* better, as the user can at least see the outer structure of o
 Maybe we could fallback to a `sentinel` value, such as `0` or `-1` to indicate a failure?
 
 ```scala
-def displayTemperature(
-    behavior: String
+def currentTemperature(
+    behavior: Scenario
 ): String =
   try
-    "Temperature: " + getTemperature(behavior)
+    "Temperature: " +
+      displayTemperature(behavior)
   catch
     case (ex: RuntimeException) =>
       "Temperature: -1 degrees"
 
-displayTemperature("Network Error")
+currentTemperature(Scenario.NetworkError)
 // res2: String = "Temperature: -1 degrees"
 ```
 
@@ -87,16 +94,17 @@ Clearly, this isn't acceptable, as both of these common sentinel values are vali
 We can take a more honest and accurate approach in this situation.
 
 ```scala
-def displayTemperature(
-    behavior: String
+def currentTemperature(
+    behavior: Scenario
 ): String =
   try
-    "Temperature: " + getTemperature(behavior)
+    "Temperature: " +
+      displayTemperature(behavior)
   catch
     case (ex: RuntimeException) =>
       "Temperature Unavailable"
 
-displayTemperature("Network Error")
+currentTemperature(Scenario.NetworkError)
 // res3: String = "Temperature Unavailable"
 ```
 
@@ -106,28 +114,81 @@ In this situation, do we show the same message to the user? Ideally, we would sh
 The Network issue is transient, but the GPS problem is likely permanent.
 
 ```scala
-def displayTemperature(
-    behavior: String
+def currentTemperature(
+    behavior: Scenario
 ): String =
   try
-    "Temperature: " + getTemperature(behavior)
+    "Temperature: " +
+      displayTemperature(behavior)
   catch
     case (ex: NetworkException) =>
       "Network Unavailable"
     case (ex: GpsException) =>
       "GPS problem"
 
-displayTemperature("Network Error")
+currentTemperature(Scenario.NetworkError)
 // res4: String = "Network Unavailable"
-displayTemperature("GPS Error")
+currentTemperature(Scenario.GPSError)
 // res5: String = "GPS problem"
 ```
 
 Wonderful!
 We have specific messages for all relevant error cases. However, this still suffers from downsides that become more painful as the codebase grows.
 
-- The signature of `getTemperature` does not alert us that it might fail
+- The signature of `currentTemperature` does not alert us that it might fail
 - If we realize it can fail, we must dig through the implementation to discover the multiple failure values
+- We never have certainty about the failure paths of our full application, or any subset of it.
+
+{{ TODO Tear apart exceptions more }}
+
+Encountering an error during a function call generally means two things:
+
+1. You can't continue executing the function in the normal fashion.
+
+2. You can't return a normal result.
+
+Many languages use *exceptions* for handling errors.
+An exception *throws* out of the current execution path to locate a user-written *handler* to deal with the error.
+There are two goals for exceptions:
+
+1. Separate error-handling code from "success-path" code, so the success-path code is easier to understand and reason about.
+
+2. Reduce redundant error-handling code by handling associated errors in a single place.
+
+Exceptions have problems:
+
+1. They can be "swallowed."
+   Just because code throws an exception, there's no guarantee that issue will be dealt with.
+
+1. They can lose important information.
+   Once an exception is caught, it is considered to be "handled," and the program doesn't need to retain the failure information.
+
+1. They aren't typed.
+   Java's checked exceptions provide a small amount of type information, but it's not that helpful compared to a full type system.
+   Unchecked exceptions provide no information at all.
+
+1. Because they are handled dynamically, the only way to ensure your program
+   won't crash is by testing it through all possible execution paths. A
+   statically-typed error management solution can ensure---at compile
+   time---that all errors are handled.
+
+1. They don't scale.
+   {{Need to think about this more to make the case.}}
+
+1. Hard to reason about. {{Also need to make this case}}
+
+1. Difficult or impossible to retry an operation if it fails.
+   Java {{and Scala?}} use the "termination" model of exception handling.
+   This assumes the error is so critical there's no way to get back to where the exception occurred.
+   If you're performing an operation that you'd like to retry if it fails, exceptions don't help much.
+
+Exceptions were a valiant attempt to produce a consistent error-reporting interface, and they are definitely better than what's in C.
+But they don't end up solving the problem very well, and you just don't know what you're going to get when you use exceptions.
+
+
+### What's wrong with Try?
+
+### ADTS as another step forward
 
 ## ZIO Error Handling
 
@@ -141,144 +202,113 @@ TODO {{Update verbiage now that ZIO section is first}}
 ### ZIO-First Error Handling
 
 ```scala
-// TODO Consult about type param styling
 import zio.ZIO
 import zio.Runtime.default.unsafeRun
 
-def getTemperatureZ(behavior: String): ZIO[
+def getTemperatureZ(behavior: Scenario): ZIO[
   Any,
   GpsException | NetworkException,
   String
 ] =
-  if (behavior == "GPS Error")
+  if (behavior == Scenario.GPSError)
     ZIO.fail(new GpsException())
-  else if (behavior == "Network Error")
+  else if (behavior == Scenario.NetworkError)
     // TODO Use a non-exceptional error
     ZIO.fail(new NetworkException())
   else
     ZIO.succeed("30 degrees")
 
-unsafeRun(getTemperatureZ("Succeed"))
+unsafeRun(getTemperatureZ(Scenario.Success))
 // res6: String = "30 degrees"
 ```
 
 ```scala
 unsafeRun(
-  getTemperatureZ("Succeed").catchAll {
+  getTemperatureZ(Scenario.Success).catchAll {
     case ex: NetworkException =>
       ZIO.succeed("Network Unavailable")
   }
 )
-// error: 
+// error:
 // match may not be exhaustive.
 // 
 // It would fail on pattern case: _: GpsException
-//
+// 
+//         ZIO.succeed("Network Unavailable")
+//     ^
 ```
-
 
 TODO Demonstrate ZIO calculating the error types without an explicit annotation being provided
 
 ```scala
-unsafeRun(getTemperatureZ("GPS Error").orDie)
-// zio.FiberFailure: Fiber failed.
-// An unchecked error was produced.
-// repl.MdocSession$App$GpsException
-// 	at repl.MdocSession$App.getTemperatureZ$1$$anonfun$1(11_Hello_Failures.md:134)
-// 	at zio.ZIO$.fail$$anonfun$1(ZIO.scala:3383)
-// 	at zio.internal.FiberContext.runUntil(FiberContext.scala:448)
-// 	at zio.internal.FiberContext.run(FiberContext.scala:305)
-// 	at zio.Runtime.unsafeRunWith(Runtime.scala:312)
-// 	at zio.Runtime.defaultUnsafeRunSync(Runtime.scala:89)
-// 	at zio.Runtime.defaultUnsafeRunSync$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.defaultUnsafeRunSync(Runtime.scala:379)
-// 	at zio.Runtime.unsafeRunSync(Runtime.scala:84)
-// 	at zio.Runtime.unsafeRunSync$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.unsafeRunSync(Runtime.scala:379)
-// 	at zio.Runtime.unsafeRun(Runtime.scala:66)
-// 	at zio.Runtime.unsafeRun$(Runtime.scala:27)
-// 	at zio.Runtime$$anon$3.unsafeRun(Runtime.scala:379)
-// 	at repl.MdocSession$App.$init$$$anonfun$2(11_Hello_Failures.md:156)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.crash(DocumentBuilder.scala:75)
-// 	at repl.MdocSession$App.<init>(11_Hello_Failures.md:157)
-// 	at repl.MdocSession$.app(11_Hello_Failures.md:3)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.build$$anonfun$2$$anonfun$1(DocumentBuilder.scala:89)
-// 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
-// 	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)
-// 	at scala.Console$.withErr(Console.scala:193)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.build$$anonfun$1(DocumentBuilder.scala:90)
-// 	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
-// 	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)
-// 	at scala.Console$.withOut(Console.scala:164)
-// 	at mdoc.internal.document.DocumentBuilder$$doc$.build(DocumentBuilder.scala:91)
-// 	at mdoc.internal.markdown.MarkdownBuilder$.liftedTree1$1(MarkdownBuilder.scala:47)
-// 	at mdoc.internal.markdown.MarkdownBuilder$.$anonfun$1(MarkdownBuilder.scala:70)
-// 	at mdoc.internal.markdown.MarkdownBuilder$$anon$1.run(MarkdownBuilder.scala:103)
-// 
-// Fiber:Id(1629775681801,17) was supposed to continue to:
-//   a future continuation at zio.Runtime.unsafeRunWith$$anonfun$2(Runtime.scala:311)
-// 
-// Fiber:Id(1629775681801,17) execution trace:
-//   at zio.ZIO.orDieWith$$anonfun$1(ZIO.scala:1249)
-// 
-// Fiber:Id(1629775681801,17) was spawned by: <empty trace>
+unsafeRun(getTemperatureZ(Scenario.GPSError))
+// Exception in thread "zio-fiber-17" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
+// 	at repl.MdocSession$.App.<local App>.getTemperatureZ.macro(11_Hello_Failures.md:148)
 ```
 
 ### Wrapping Legacy Code
 
 If we are unable to re-write the fallible function, we can still wrap the call
+We are re-using the  `displayTemperature`
+
+{{TODO }}
 
 ```scala
 import zio.Runtime.default.unsafeRun
 import zio.{Task, ZIO}
 ```
 
-
 ```scala
-def getTemperatureZWrapped(
-    behavior: String
-): ZIO[Any, Throwable, String] =
-  ZIO(getTemperature(behavior)).catchAll {
-    case ex: NetworkException =>
-      ZIO.succeed("Network Unavailable")
-    case ex: GpsException =>
-      ZIO.succeed("GPS problem")
-  }
+def displayTemperatureZWrapped(
+    behavior: Scenario
+): ZIO[Any, Nothing, String] =
+  ZIO
+    .attempt(displayTemperature(behavior))
+    .catchAll {
+      case ex: NetworkException =>
+        ZIO.succeed("Network Unavailable")
+      case ex: GpsException =>
+        ZIO.succeed("GPS problem")
+    }
 ```
 
 ```scala
-unsafeRun(getTemperatureZWrapped("Succeed"))
+unsafeRun(
+  displayTemperatureZWrapped(Scenario.Success)
+)
 // res8: String = "35 degrees"
 ```
 
 ```scala
 unsafeRun(
-  getTemperatureZWrapped("Network Error")
+  displayTemperatureZWrapped(
+    Scenario.NetworkError
+  )
 )
 // res9: String = "Network Unavailable"
 ```
 
 This is decent, but does not provide the maximum possible guarantees. Look at what happens if we forget to handle one of our errors.
 
-
 ```scala
 def getTemperatureZGpsGap(
-    behavior: String
-): ZIO[Any, Exception, String] =
-  ZIO(getTemperature(behavior)).catchAll {
-    case ex: NetworkException =>
+    behavior: Scenario
+): ZIO[Any, Nothing, String] =
+  ZIO
+    .attempt(displayTemperature(behavior))
+    .catchAll { case ex: NetworkException =>
       ZIO.succeed("Network Unavailable")
-  }
-import mdoc.unsafeRunTruncate
+    }
 ```
 
 ```scala
+import mdoc.unsafeRunTruncate
 unsafeRunTruncate(
-  getTemperatureZGpsGap("GPS Error")
+  getTemperatureZGpsGap(Scenario.GPSError)
 )
-// Defect: class scala.MatchError
-//         GpsException
 ```
 
-The compiler does not catch this bug, and instead fails at runtime. Can we do better?
+The compiler does not catch this bug, and instead fails at runtime. 
 
+
+{{TODO show catchSome}}

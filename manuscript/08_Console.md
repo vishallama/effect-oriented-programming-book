@@ -31,7 +31,6 @@ If we do not have access to the implementation source code, this is a surprise t
 
 ## Building a Better Way
 
-
 Before looking at the official ZIO implementation, we will create a simpler version.
 
 TODO: Decide whether explaining this pattern belongs in a standalone section.
@@ -50,12 +49,10 @@ Steps 3 and 4 are less familiar, and a bit harder to appreciate.
 We endeavor in the following chapters to make a compelling case for them.
 If we succeed, the reader will add them when creating their own Effects.
 
-
 ### One: Create the trait
 
 This `trait` represents a piece of the `Environment` that our codes need to interact with.
 It contains the methods for effectful interactions.
-
 
 ```scala
 import zio.ZIO
@@ -80,60 +77,27 @@ object ConsoleLive extends Console:
 TODO{Determine how to best split the 2 pieces we need to add to the same `object` for these steps}
 
 ### Three: Create Accessor Methods in Companion
+
 The first two steps are enough for us to track Effects in our system, but the ergonomics are not great.
 
 ```scala
 val logicClunky: ZIO[Console, Nothing, Unit] =
   for
     _ <-
-      ZIO
-        .accessZIO[Console](_.printLine("Hello"))
+      ZIO.serviceWithZIO[Console](
+        _.printLine("Hello")
+      )
     _ <-
-      ZIO
-        .accessZIO[Console](_.printLine("World"))
+      ZIO.serviceWithZIO[Console](
+        _.printLine("World")
+      )
   yield ()
-// logicClunky: ZIO[Console, Nothing, Unit] = zio.ZIO$FlatMap@60aeb284
+// logicClunky: ZIO[Console, Nothing, Unit] = <function1>
 
 import zio.Runtime.default.unsafeRun
-unsafeRun(logicClunky.provide(ConsoleLive))
-// Hello
-// World
-```
-
-The caller has to handle the ZIO environment access, which is a distraction from the logic they want to implement.
-Further, in the example above, by making `Console` a direct environment dependency, our composability is harmed. 
-TODO{Consider example with another Environment trait dependency, to show  direct inheritance downsides. This probably requires a 2nd dependency to be compelling.}
-We want to leverage the `Has` type so that our code can use an arbitrary number of Environmental dependencies and be executed with `Layers`, rather than a massive super-object that inherits all these traits directly.
-
-```scala
-import zio.Has
-
-// TODO remove alt companions and make top-level
-// functions
-object ConsoleWithAccessor:
-  def printLine(
-      variable: => String
-  ): ZIO[Has[Console], Nothing, Unit] =
-    ZIO.serviceWith(_.printLine(variable))
-```
-
-With this function, our callers have a much nicer experience.
-
-```scala
-val logic: ZIO[Has[Console], Nothing, Unit] =
-  for
-    _ <- ConsoleWithAccessor.printLine("Hello")
-    _ <- ConsoleWithAccessor.printLine("World")
-  yield ()
-// logic: ZIO[Has[Console], Nothing, Unit] = zio.ZIO$FlatMap@4a95654e
-```
-
-However, providing dependencies to the logic is still tedious.
-
-```scala
 import zio.ZLayer
 unsafeRun(
-  logic.provideLayer(
+  logicClunky.provide(
     ZLayer.succeed[Console](ConsoleLive)
   )
 )
@@ -141,41 +105,73 @@ unsafeRun(
 // World
 ```
 
+The caller has to handle the ZIO environment access, which is a distraction from the logic they want to implement.
+
+```scala
+// TODO Consider deleting this entirely
+
+// TODO remove alt companions and make top-level
+// functions
+object ConsoleWithAccessor:
+  def printLine(
+      variable: => String
+  ): ZIO[Console, Nothing, Unit] =
+    ZIO.serviceWith(_.printLine(variable))
+```
+
+With this function, our callers have a much nicer experience.
+
+```scala
+val logic: ZIO[Console, Nothing, Unit] =
+  for
+    _ <- ConsoleWithAccessor.printLine("Hello")
+    _ <- ConsoleWithAccessor.printLine("World")
+  yield ()
+// logic: ZIO[Console, Nothing, Unit] = <function1>
+```
+
+However, providing dependencies to the logic is still tedious.
+
+```scala
+import zio.ZLayer
+import zio.Runtime.default.unsafeRun
+unsafeRun(
+  logic.provide(
+    ZLayer.succeed[Console](ConsoleLive)
+  )
+)
+```
+
 ### Four: Create `object Effect.live` field
 
 Rather than making each caller wrap our instance in a `Layer`, we can do that a single time in our companion.
 
 ```scala
-import zio.Layer
+import zio.ZLayer
 
 object ConsoleWithLayer:
-  val live: Layer[Nothing, Has[Console]] =
-    ZLayer.succeed(ConsoleLive)
+  val live: ZLayer[Any, Nothing, Console] =
+    ZLayer.succeed[Console](ConsoleLive)
 ```
 
 Now executing our code is as simple as describing it.
 
-
 ```scala
-unsafeRun(
-  logic.provideLayer(ConsoleWithLayer.live)
-)
-// Hello
-// World
+unsafeRun(logic.provide(ConsoleWithLayer.live))
 ```
 
 In real application, both of these will go in the companion object directly.
 
 ```scala
-import zio.Layer
+import zio.ZLayer
 object Console:
   def printLine(
       variable: => String
-  ): ZIO[Has[Console], Nothing, Unit] =
+  ): ZIO[Console, Nothing, Unit] =
     ZIO.serviceWith(_.printLine(variable))
 
-  val live: Layer[Nothing, Has[Console]] =
-    ZLayer.succeed(ConsoleLive)
+  val live: ZLayer[Any, Nothing, Console] =
+    ZLayer.succeed[Console](ConsoleLive)
 ```
 
 ## Official ZIO Approach
@@ -183,6 +179,35 @@ object Console:
 TODO
 
 ## ZIO Super-Powers
+
+#### Single expression debugging
+When debugging code, we often want to stick a `println` among our logic.
+
+```scala
+def crunch(a: Int, b: Int) = (a * 2) / (a * 10)
+```
+Historically, this has caused friction for chained expressions.
+We must surround our expression in braces, in order to add this _statement_ before it.
+
+```scala
+def crunchDebugged(a: Int, b: Int) =
+  println("")
+  a * a
+```
+
+
+```scala
+import zio.ZIOAppDefault
+import mdoc.unsafeRunPrettyPrint
+
+unsafeRunPrettyPrint(
+  ZIO.debug("ping") *>
+    ConsoleLive.printLine("Normal logic")
+)
+// ping
+// Normal logic
+// Res: ()
+```
 
 ```scala
 object ConsoleSanitized extends Console:
@@ -206,16 +231,109 @@ object ConsoleSanitized extends Console:
 
 ```scala
 val leakSensitiveInfo
-    : ZIO[Has[Console], Nothing, Unit] =
+    : ZIO[Console, Nothing, Unit] =
   Console
     .printLine("Customer SSN is 000-00-0000")
 ```
 
 ```scala
 unsafeRun(
-  leakSensitiveInfo.provideLayer(
+  leakSensitiveInfo.provide(
     ZLayer.succeed[Console](ConsoleSanitized)
   )
 )
-// Customer SSN is ***-**-****
 ```
+
+
+## Automatically attached experiments.
+ These are included at the end of this
+ chapter because their package in the
+ experiments directory matched the name
+ of this chapter. Enjoy working on the
+ code with full editor capabilities :D
+
+ 
+
+### experiments/src/main/scala/console/FakeConsole.scala
+```scala
+package console
+
+import zio._
+import zio.Console
+import zio.Console._
+
+import java.io.IOException
+
+object FakeConsole:
+
+  val name: Console = single("(default name)")
+
+  val word: Console   = single("Banana")
+  val number: Console = single("1")
+
+  def single(hardcodedInput: String) =
+    new Console:
+      def print(line: => Any)(implicit
+          trace: zio.ZTraceElement
+      ): zio.IO[java.io.IOException, Unit] =
+        ZIO.succeed(print("Hard-coded: " + line))
+      def printError(line: => Any)(implicit
+          trace: zio.ZTraceElement
+      ): zio.IO[java.io.IOException, Unit] = ???
+      def printLine(line: => Any)(implicit
+          trace: zio.ZTraceElement
+      ): zio.IO[java.io.IOException, Unit] =
+        ZIO.succeed(
+          println("Hard-coded: " + line)
+        )
+      def printLineError(line: => Any)(implicit
+          trace: zio.ZTraceElement
+      ): zio.IO[java.io.IOException, Unit] = ???
+      def readLine(implicit
+          trace: zio.ZTraceElement
+      ): zio.IO[java.io.IOException, String] =
+        ZIO.succeed(hardcodedInput)
+
+  def withInput(
+      hardcodedInput: String*
+  ): ZIO[Any, Nothing, Console] =
+    for inputVariable <-
+        Ref.make(hardcodedInput.toSeq)
+    yield inputConsole(inputVariable)
+
+  private def inputConsole(
+      hardcodedInput: Ref[Seq[String]]
+  ) =
+    new Console:
+      def print(line: => Any)(implicit
+          trace: zio.ZTraceElement
+      ): zio.IO[java.io.IOException, Unit] =
+        IO.succeed(print(line))
+
+      def printError(line: => Any)(implicit
+          trace: zio.ZTraceElement
+      ): zio.IO[java.io.IOException, Unit] = ???
+
+      def printLine(line: => Any)(implicit
+          trace: zio.ZTraceElement
+      ): zio.IO[java.io.IOException, Unit] =
+        ZIO
+          .succeed(println("Automated: " + line))
+
+      def printLineError(line: => Any)(implicit
+          trace: zio.ZTraceElement
+      ): zio.IO[java.io.IOException, Unit] = ???
+
+      def readLine(implicit
+          trace: zio.ZTraceElement
+      ): zio.IO[java.io.IOException, String] =
+        for
+          curInput <- hardcodedInput.get
+          _ <- hardcodedInput.set(curInput.tail)
+        yield curInput.head
+
+end FakeConsole
+
+```
+
+            

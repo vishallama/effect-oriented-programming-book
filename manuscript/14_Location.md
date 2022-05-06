@@ -7,7 +7,7 @@ Previously, we have examined this in terms of "Which Machine?"
 However, it is equally valid to treat this as a spatial location at which our code is executed.
 
 ```scala
-import zio.{Has, ZIO}
+import zio.{ZIO}
 ```
 
 ```scala
@@ -25,10 +25,11 @@ trait Location:
   def timezone: ZIO[Any, Nothing, TimeZone]
 
 object Location:
-  def gpsCoords: ZIO[Has[
-    Location
-  ], HardwareFailure, GpsCoordinates] =
-    ZIO.serviceWith(_.gpsCoords)
+  def gpsCoords: ZIO[
+    Location,
+    HardwareFailure,
+    GpsCoordinates
+  ] = ZIO.service[Location].flatMap(_.gpsCoords)
 ```
 
 Now that we have basic `Location`-awareness, we can build more domain-specific logic on top of it.
@@ -48,7 +49,7 @@ trait FloodWarning:
 case class Slope(degrees: Float)
 
 trait Topography:
-  def slope: ZIO[Has[Location], Nothing, Slope]
+  def slope: ZIO[Location, Nothing, Slope]
 ```
 
 ```scala
@@ -56,7 +57,7 @@ case class Rainfall(inches: Int)
 
 trait Almanac:
   def averageAnnualRainfail
-      : ZIO[Has[Location], Nothing, Rainfall]
+      : ZIO[Location, Nothing, Rainfall]
 ```
 
 
@@ -64,16 +65,13 @@ trait Almanac:
 case class Country(name: String)
 
 trait CountryService:
-  def currentCountry: ZIO[Has[
-    Location
-  ], HardwareFailure, Country]
+  def currentCountry
+      : ZIO[Location, HardwareFailure, Country]
 
 object CountryService:
-  def currentCountry: ZIO[Has[
-    Location
-  ], HardwareFailure, Country] =
-    for
-      gpsCords <- Location.gpsCoords
+  def currentCountry
+      : ZIO[Location, HardwareFailure, Country] =
+    for gpsCords <- Location.gpsCoords
     yield Country("USA")
 ```
 
@@ -86,23 +84,28 @@ trait GeoPolitcalState
 trait CurrentWar
 
 enum Issue:
-  case OnlineGambling, Alcohol
+  case OnlineGambling,
+    Alcohol
 
 trait LawLibrary:
   def status(
       country: Country,
       issue: Issue
-  ): ZIO[Has[
-    GeoPolitcalState
-  ], CurrentWar, LegalStatus]
+  ): ZIO[
+    GeoPolitcalState,
+    CurrentWar,
+    LegalStatus
+  ]
 
 class LegalService(
     countryService: CountryService,
     lawLibrary: LawLibrary
 ):
-  def status(issue: Issue): ZIO[Has[
-    Location
-  ] & Has[GeoPolitcalState], CurrentWar | HardwareFailure, LegalStatus] =
+  def status(issue: Issue): ZIO[
+    Location & GeoPolitcalState,
+    CurrentWar | HardwareFailure,
+    LegalStatus
+  ] =
     for
       country <- countryService.currentCountry
       status <- lawLibrary.status(country, issue)
