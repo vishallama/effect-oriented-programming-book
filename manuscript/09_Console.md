@@ -223,9 +223,6 @@ object ConsoleSanitized extends Console:
           socialSecurity,
           "***-**-****"
         )
-        .nn
-    // TODO ugh. String methods with explicit
-    // nulls *suck*
     ConsoleLive.printLine(sanitized)
 ```
 

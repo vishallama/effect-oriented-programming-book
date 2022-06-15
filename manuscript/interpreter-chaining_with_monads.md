@@ -60,12 +60,12 @@ def demoInterpreter() =
   val value = Value("asdf")
   println(interpret(value) == "asdf")
 
-  val upperOp = MapOp(_.toUpperCase.nn)
+  val upperOp = MapOp(_.toUpperCase)
   println(
     interpret(upperOp) == ""
   ) // applies the operation to the default empty string
 
-  val valueUpperOp = value.map(_.toUpperCase.nn)
+  val valueUpperOp = value.map(_.toUpperCase)
   println(interpret(valueUpperOp) == "ASDF")
 
   val valueUpperTakeTwoOp =
@@ -95,7 +95,7 @@ def demoInterpreter() =
 
   val valueFlatMapOpToValueMapOp =
     value.flatMap(asdf =>
-      Value(asdf).map(_.toUpperCase.nn)
+      Value(asdf).map(_.toUpperCase)
     )
   println(
     interpret(valueFlatMapOpToValueMapOp) ==
@@ -104,9 +104,7 @@ def demoInterpreter() =
 
   val valueFlatMapOpToValueToFlatMap =
     value
-      .flatMap(asdf =>
-        Value(asdf.toUpperCase.nn)
-      )
+      .flatMap(asdf => Value(asdf.toUpperCase))
       .flatMap(upper => Value(upper.take(2)))
   println(
     interpret(valueFlatMapOpToValueToFlatMap) ==
@@ -116,7 +114,7 @@ def demoInterpreter() =
   val program =
     Value("asdf").flatMap { asdf =>
       println(s"asdf = $asdf")
-      Value(asdf.toUpperCase.nn).map { upper =>
+      Value(asdf.toUpperCase).map { upper =>
         println(s"upper = $upper")
         upper.take(2)
       }
@@ -127,7 +125,7 @@ def demoInterpreter() =
   val programFor =
     for
       asdf  <- Value("asdf")
-      upper <- Value(asdf.toUpperCase.nn)
+      upper <- Value(asdf.toUpperCase)
     yield upper.take(2)
 
   println(interpret(programFor))
