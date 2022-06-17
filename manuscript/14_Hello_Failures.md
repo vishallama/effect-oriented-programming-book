@@ -306,7 +306,7 @@ import mdoc.unsafeRunTruncate
 unsafeRunTruncate(
   getTemperatureZGpsGap(Scenario.GPSError)
 )
-// res10: String | Unit | String = "bloop"
+// res10: String | Unit | String = ()
 ```
 
 The compiler does not catch this bug, and instead fails at runtime. 

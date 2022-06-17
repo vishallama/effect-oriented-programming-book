@@ -47,7 +47,7 @@ object UnreliableMutability:
     yield "Final count: " + counter
 
 unsafeRunPrettyPrint(UnreliableMutability.demo)
-// res0: String | Unit | String = "Final count: 9997"
+// res0: String | Unit | String = "Final count: 9995"
 ```
 
 Rather than avoiding mutability entirely, we want to avoid unprincipled, unsafe mutability.
@@ -59,6 +59,7 @@ Required Operations:
 
 These are both effectful operations.
 Less obviously, we also need to create the Mutable reference itself.
+We are changing the world, by creating a space that we can manipulate.
 A simple representation of this could look like:
 
 ```scala
