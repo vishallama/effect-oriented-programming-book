@@ -207,6 +207,7 @@ unsafeRunPrettyPrint(
 // ping
 // Normal logic
 // Res: ()
+// res4: Unit | Unit | String = ()
 ```
 
 ```scala

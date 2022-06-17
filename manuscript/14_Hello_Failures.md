@@ -242,7 +242,7 @@ TODO Demonstrate ZIO calculating the error types without an explicit annotation 
 
 ```scala
 unsafeRun(getTemperatureZ(Scenario.GPSError))
-// Exception in thread "zio-fiber-20021" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
+// Exception in thread "zio-fiber-10018" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
 // 	at repl.MdocSession$.App.<local App>.getTemperatureZ.macro(14_Hello_Failures.md:148)
 ```
 
@@ -306,6 +306,7 @@ import mdoc.unsafeRunTruncate
 unsafeRunTruncate(
   getTemperatureZGpsGap(Scenario.GPSError)
 )
+// res10: String | Unit | String = "bloop"
 ```
 
 The compiler does not catch this bug, and instead fails at runtime. 

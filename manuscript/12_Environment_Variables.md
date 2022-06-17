@@ -261,6 +261,7 @@ unsafeRunPrettyPrint(
       originalAuthor
   )
 )
+// res7: Hotel | Unit | String = Hotel(name = "Eddy's Roach Motel")
 ```
 
 **Collaborator's Machine:**
@@ -280,6 +281,7 @@ unsafeRunPrettyPrint(
       collaborater
   )
 )
+// res9: Hotel | Unit | String = ()
 ```
 
 **Continuous Integration Server:**
@@ -295,6 +297,7 @@ unsafeRunPrettyPrint(
     System.live >>> SystemStrict.live >+> ci
   )
 )
+// res11: Hotel | Unit | String = ()
 ```
 
 TODO{{The actual line looks the same, which I highlighted as a problem before. How should we indicate that the Environment is different?}}
