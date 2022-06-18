@@ -9,7 +9,7 @@
 
  
 
-### experiments/src/main/scala/concurrency/Simple.scala
+### experiments/src/main/scala/concurrency/OperatorDemos.scala
 ```scala
 package concurrency
 

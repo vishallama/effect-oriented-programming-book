@@ -44,7 +44,6 @@ handlingErrors.md
 fibers.md
 atomic-realZIO.md
 prelude.md
-grammar.md
 interpreter-chaining_with_previous_result.md
 experiments-src-test-scala-bigdec.md
 zio_intro.md
