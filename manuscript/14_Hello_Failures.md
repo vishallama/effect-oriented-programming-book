@@ -313,3 +313,324 @@ The compiler does not catch this bug, and instead fails at runtime.
 
 
 {{TODO show catchSome}}
+
+## Automatically attached experiments.
+ These are included at the end of this
+ chapter because their package in the
+ experiments directory matched the name
+ of this chapter. Enjoy working on the
+ code with full editor capabilities :D
+
+ 
+
+### experiments/src/main/scala/hello_failures/BadTypeManagement.scala
+```scala
+package hello_failures
+
+import zio.ZIO
+
+object BadTypeManagement
+    extends zio.ZIOAppDefault:
+  val logic: ZIO[Any, Exception, String] =
+    for
+      _ <- ZIO.debug("ah")
+      result <-
+        failable(1).catchAll {
+          case ex: Exception =>
+            ZIO.fail(ex)
+          case ex: String =>
+            ZIO.succeed(
+              "recovered string error: " + ex
+            )
+        }
+      _ <- ZIO.debug(result)
+    yield result
+  def run = logic
+
+  def failable(
+      path: Int
+  ): ZIO[Any, Exception | String, String] =
+    if (path < 0)
+      ZIO.fail(new Exception("Negative path"))
+    else if (path > 0)
+      ZIO.fail("Too big")
+    else
+      ZIO.succeed("just right")
+end BadTypeManagement
+
+```
+
+
+### experiments/src/main/scala/hello_failures/KeepSuccesses.scala
+```scala
+package hello_failures
+
+import zio.Console.printLine
+import zio.ZIO
+
+object KeepSuccesses extends zio.ZIOAppDefault:
+  val allCalls =
+    List("a", "b", "large payload", "doomed")
+
+  case class GoodResponse(payload: String)
+  case class BadResponse(payload: String)
+
+  val initialRequests =
+    allCalls.map(fastUnreliableNetworkCall)
+
+  val logic =
+    for
+      results <-
+        ZIO.collectAllSuccesses(
+          initialRequests.map(
+            _.tapError(e =>
+              printLine("Error: " + e)
+            )
+          )
+        )
+      _ <- printLine(results)
+    yield ()
+
+  val moreStructuredLogic =
+    for
+      results <-
+        ZIO.partition(allCalls)(
+          fastUnreliableNetworkCall
+        )
+      _ <-
+        results match
+          case (failures, successes) =>
+            for
+              _ <-
+                ZIO.foreach(failures)(e =>
+                  printLine(
+                    "Error: " + e +
+                      ". Should retry on other server."
+                  )
+                )
+              recoveries <-
+                ZIO.collectAllSuccesses(
+                  failures.map(failure =>
+                    slowMoreReliableNetworkCall(
+                      failure.payload
+                    ).tapError(e =>
+                      printLine(
+                        "Giving up on: " + e
+                      )
+                    )
+                  )
+                )
+              _ <-
+                printLine(
+                  "All successes: " +
+                    (successes ++ recoveries)
+                )
+            yield ()
+    yield ()
+
+  val logicSpecific =
+    ZIO.collectAllWith(initialRequests)(
+      _.payload.contains("a")
+    )
+
+  def run =
+//      logic
+    moreStructuredLogic
+
+  def fastUnreliableNetworkCall(input: String) =
+    if (input.length < 5)
+      ZIO.succeed(GoodResponse(input))
+    else
+      ZIO.fail(BadResponse(input))
+
+  def slowMoreReliableNetworkCall(
+      input: String
+  ) =
+    if (input.contains("a"))
+      ZIO.succeed(GoodResponse(input))
+    else
+      ZIO.fail(BadResponse(input))
+end KeepSuccesses
+
+```
+
+
+### experiments/src/main/scala/hello_failures/OrDie.scala
+```scala
+package hello_failures
+
+import zio.ZIO
+
+object OrDie extends zio.ZIOAppDefault:
+  val logic =
+    for _ <- failable(-1).orDie
+    yield ()
+
+  def run = logic
+
+  def failable(
+      path: Int
+  ): ZIO[Any, Exception, String] =
+    if (path < 0)
+      ZIO.fail(new Exception("Negative path"))
+//    else if (path > 0)
+//      ZIO.fail("Too big")
+    else
+      ZIO.succeed("just right")
+
+```
+
+
+### experiments/src/main/scala/hello_failures/catching.scala
+```scala
+package hello_failures
+
+import zio.*
+import zio.Console.*
+import hello_failures.file
+import java.io.IOException
+
+def standIn: ZIO[Any, IOException, Unit] =
+  printLine("Im a stand-in")
+
+object catching extends zio.ZIOAppDefault:
+
+  val logic = loadFile("TargetFile")
+
+  def run =
+    logic
+      .catchAll(_ =>
+        println("Error Caught")
+        loadBackupFile()
+      )
+      .exitCode
+
+// standIn.exitCode
+
+```
+
+
+### experiments/src/main/scala/hello_failures/fallback.scala
+```scala
+package hello_failures
+
+import zio.*
+import zio.Console
+import scala.util.Random
+// A useful way of dealing with errors is by
+// using the
+// `orElse()` method.
+
+case class file(name: String)
+
+def loadFile(fileName: String) =
+  if (Random.nextBoolean())
+    println("First Attempt Successful")
+    ZIO.succeed(file(fileName))
+  else
+    println("First Attempt Not Successful")
+    ZIO.fail("File not found")
+
+def loadBackupFile() =
+  println("Backup file used")
+  ZIO.succeed(file("BackupFile"))
+
+object fallback extends zio.ZIOAppDefault:
+
+  // orElse is a combinator that can be used to
+  // handle
+  // effects that can fail.
+
+  def run =
+    val loadedFile: UIO[file] =
+      loadFile("TargetFile")
+        .orElse(loadBackupFile())
+    loadedFile.exitCode
+
+```
+
+
+### experiments/src/main/scala/hello_failures/folding.scala
+```scala
+package hello_failures
+
+import zio.*
+import zio.Console.*
+import hello_failures.file
+import hello_failures.standIn
+
+object folding extends ZIOAppDefault:
+// When applied to ZIO, fold() allows the
+  // programmer to handle both failure
+// and success at the same time.
+// ZIO's fold method can be broken into two
+  // pieces: fold(), and foldM()
+// fold() supplied a non-effectful handler, why
+  // foldM() applies an effectful handler.
+
+  val logic = loadFile("targetFile")
+
+  def run =
+    logic
+      .foldZIO(
+        _ => loadBackupFile(),
+        _ =>
+          printLine(
+            "The file opened on first attempt!"
+          )
+      ) // Effectful handling
+      .exitCode
+end folding
+
+```
+
+
+### experiments/src/main/scala/hello_failures/value.scala
+```scala
+package hello_failures
+
+import zio.*
+
+object value:
+  // Either and Absolve take ZIO types and
+  // 'surface' or 'submerge'
+  // the error.
+
+  // Either takes an ZIO[R, E, A] and produces an
+  // ZIO[R, Nothing, Either[E,A]]
+  // The error is 'surfaced' by making a
+  // non-failing ZIO that returns an Either.
+
+  // Absolve takes an ZIO[R, Nothing,
+  // Either[E,A]], and returns a ZIO[R,E,A]
+  // The error is 'submerged', as it is pushed
+  // from an either into a ZIO.
+
+  val zEither: UIO[Either[String, Int]] =
+    IO.fail("Boom").either
+
+  // IO.fail("Boom") is naturally type
+  // ZIO[R,String,Int], but is
+  // converted into type UIO[Either[String, Int]
+
+  def sqrt(
+      input: UIO[Double]
+  ): IO[String, Double] =
+    ZIO.absolve(
+      input.map(value =>
+        if (value < 0.0)
+          Left("Value must be >= 0.0")
+        else
+          Right(Math.sqrt(value))
+      )
+    )
+end value
+
+// The Left-Right statements naturally from an
+// 'either' of type either[String, Double].
+// the ZIO.absolve changes the either into an
+// ZIO of type IO[String, Double]
+
+```
+
+            

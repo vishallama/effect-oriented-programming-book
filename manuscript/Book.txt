@@ -40,7 +40,6 @@ HelloZio.md
 Parallelism.md
 game_theory.md
 scenarios.md
-handlingErrors.md
 fibers.md
 atomic-realZIO.md
 prelude.md
