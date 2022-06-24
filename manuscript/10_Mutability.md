@@ -88,7 +88,7 @@ val unreliableCounting =
 // unreliableCounting: ZIO[Any, Nothing, String] = <function1>
 
 unsafeRunPrettyPrint(unreliableCounting)
-// res0: String | Unit | String = "Final count: 9981"
+// res0: String | Unit | String = "Final count: 10000"
 ```
 
 Performing our side effects inside ZIO's does not magically make them safe.

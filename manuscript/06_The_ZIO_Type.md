@@ -12,10 +12,6 @@ One downside of these type parameters
 The `ZIO` trait is at the center of our Effect-oriented world.
 
 ```scala
-???
-```
-
-```scala
 trait ZIO[R, E, A]
 ```
 
@@ -59,6 +55,36 @@ def defaultGreeting()
     : ZIO[Any, Nothing, String] = ???
 ```
 
+## Conversions from standard Scala types
+ZIO provides simple interop with may of the built-in Scala data types, namely
+
+- `Option`
+- `Either`
+- `Try`
+- `scala.concurrent.Future`
+- `Promise`
+
+And even some Java types -
+
+- `java.util.concurrent.Future`
+- `AutoCloseable`
+
+```scala
+import zio.{ZIO, ZIOAppDefault}
+import scala.concurrent.Future
+import mdoc.unsafeRunPrettyPrint
+val zFuture = ZIO.fromFuture(implicit ec => Future.successful("Success!"))
+// zFuture: ZIO[Any, Throwable, String] = zio.ZIO$Descriptor@669e0663
+val zFutureFailed = ZIO.fromFuture(implicit ec => Future.failed(new Exception("Failure :(")))
+// zFutureFailed: ZIO[Any, Throwable, Nothing] = zio.ZIO$Descriptor@73e22cf4
+unsafeRunPrettyPrint(zFuture)
+// Res: Success!
+// res0: String | Unit | String = "Success!"
+unsafeRunPrettyPrint(zFutureFailed)
+// Should handle errors
+// java.lang.Exception: Failure :(
+// res1: Unit | String = ()
+```
 
 ## Automatically attached experiments.
  These are included at the end of this
@@ -74,31 +100,21 @@ def defaultGreeting()
 // EitherToZio.scala
 package the_zio_type
 
-import zio._
+import zio.{ZIO, ZIOAppDefault}
 
-import java.io
-import java.io.IOException
+import scala.util.{Left, Right}
 
 case class InvalidIntegerInput(value: String)
 
-def parseInteger(
-    input: String
-): Either[InvalidIntegerInput, Int] =
-  try
-    Right(
-      input.toInt
-    ) // Right case is an integer
-  catch
-    case e: NumberFormatException =>
-      Left(
-        InvalidIntegerInput(input)
-      ) // Left case is an error type
 object EitherToZio extends ZIOAppDefault:
+  val goodInt: Either[InvalidIntegerInput, Int] =
+    Right(42)
 
-  val zEither: IO[InvalidIntegerInput, Int] =
-    ZIO.fromEither(parseInteger("42"))
+  val zEither
+      : ZIO[Any, InvalidIntegerInput, Int] =
+    ZIO.fromEither(goodInt)
 
-  def run = zEither
+  def run = zEither.debug("Converted Either")
 
 ```
 
@@ -107,20 +123,23 @@ object EitherToZio extends ZIOAppDefault:
 ```scala
 package the_zio_type
 
-import zio._
-
-import java.io
-import java.io.IOException
+import zio.{ZIO, ZIOAppDefault}
 import scala.concurrent.Future
 
 object FutureToZio extends ZIOAppDefault:
 
-  lazy val sFuture: Future[String] =
-    Future.successful("Success!")
-  // Future.failed(new Exception("Failure :("))
+  val zFuture =
+    ZIO.fromFuture(implicit ec =>
+      Future.successful("Success!")
+    )
+
+  val zFutureFailed =
+    ZIO.fromFuture(implicit ec =>
+      Future.failed(new Exception("Failure :("))
+    )
 
   val run =
-    ZIO.fromFuture(implicit ec => sFuture)
+    zFutureFailed.debug("Converted Future")
 
 ```
 
