@@ -85,7 +85,14 @@ val unreliableCounting =
         increment()
       )
   yield "Final count: " + counter
-// unreliableCounting: ZIO[Any, Nothing, String] = <function1>
+// unreliableCounting: ZIO[Any, Nothing, String] = OnSuccess(
+//   trace = "repl.MdocSession$.App.unreliableCounting.macro(10_Mutability.md:45)",
+//   first = Stateful(
+//     trace = "repl.MdocSession$.App.unreliableCounting.macro(10_Mutability.md:44)",
+//     onState = zio.FiberRef$$anon$2$$Lambda$14672/1394196496@562a15f4
+//   ),
+//   successK = zio.ZIO$$Lambda$14644/1367991032@28d8e17f
+// )
 
 unsafeRunPrettyPrint(unreliableCounting)
 // res0: String | Unit | String = "Final count: 10000"
@@ -109,7 +116,14 @@ val reliableCounting =
       )
     finalResult <- counter.get
   yield "Final count: " + finalResult
-// reliableCounting: ZIO[Any, Nothing, String] = <function1>
+// reliableCounting: ZIO[Any, Nothing, String] = OnSuccess(
+//   trace = "repl.MdocSession$.App.reliableCounting.macro(10_Mutability.md:68)",
+//   first = Sync(
+//     trace = "repl.MdocSession$.App.reliableCounting.macro(10_Mutability.md:62)",
+//     eval = zio.ZIOCompanionVersionSpecific$$Lambda$14641/1666868304@4ab65129
+//   ),
+//   successK = repl.MdocSession$App$$Lambda$14880/106023957@4d93293a
+// )
 
 unsafeRunPrettyPrint(reliableCounting)
 // res1: String | Unit | String = "Final count: 10000"

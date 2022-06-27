@@ -203,7 +203,8 @@ TODO {{Update verbiage now that ZIO section is first}}
 
 ```scala
 import zio.ZIO
-import zio.Runtime.default.unsafeRun
+import zio.Unsafe
+import zio.Runtime.default.unsafe
 
 def getTemperatureZ(behavior: Scenario): ZIO[
   Any,
@@ -218,32 +219,49 @@ def getTemperatureZ(behavior: Scenario): ZIO[
   else
     ZIO.succeed("30 degrees")
 
-unsafeRun(getTemperatureZ(Scenario.Success))
+Unsafe.unsafeCompat { implicit u =>
+  unsafe
+    .run(
+       getTemperatureZ(Scenario.Success)
+    )
+    .getOrThrowFiberFailure()
+}
 // res6: String = "30 degrees"
 ```
 
 ```scala
-unsafeRun(
-  getTemperatureZ(Scenario.Success).catchAll {
-    case ex: NetworkException =>
-      ZIO.succeed("Network Unavailable")
+Unsafe.unsafeCompat { implicit u =>
+    unsafe
+      .run(
+        getTemperatureZ(Scenario.Success).catchAll {
+          case ex: NetworkException =>
+            ZIO.succeed("Network Unavailable")
+        }
+      )
+      .getOrThrowFiberFailure()
   }
-)
 // error:
 // match may not be exhaustive.
 // 
 // It would fail on pattern case: _: GpsException
 // 
-//         ZIO.succeed("Network Unavailable")
-//     ^
+//   Unsafe.unsafeCompat { implicit u =>
+//                                   ^
 ```
 
 TODO Demonstrate ZIO calculating the error types without an explicit annotation being provided
 
 ```scala
-unsafeRun(getTemperatureZ(Scenario.GPSError))
-// Exception in thread "zio-fiber-20021" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
-// 	at repl.MdocSession$.App.<local App>.getTemperatureZ.macro(14_Hello_Failures.md:148)
+  Unsafe.unsafeCompat { implicit u =>
+    unsafe
+      .run(
+         getTemperatureZ(Scenario.GPSError)
+      )
+      .getOrThrowFiberFailure()
+  }
+// Exception in thread "zio-fiber-20016" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
+// 	at repl.MdocSession$.App.<local App>.getTemperatureZ.macro(14_Hello_Failures.md:151)
+// 	at repl.MdocSession$.App.<local App>.macro(14_Hello_Failures.md:183)
 ```
 
 ### Wrapping Legacy Code
@@ -254,8 +272,9 @@ We are re-using the  `displayTemperature`
 {{TODO }}
 
 ```scala
-import zio.Runtime.default.unsafeRun
 import zio.{Task, ZIO}
+import zio.Unsafe
+import zio.Runtime.default.unsafe
 ```
 
 ```scala
@@ -273,18 +292,27 @@ def displayTemperatureZWrapped(
 ```
 
 ```scala
-unsafeRun(
-  displayTemperatureZWrapped(Scenario.Success)
-)
+import zio.Runtime.default.unsafe
+  Unsafe.unsafeCompat { implicit u =>
+    unsafe
+      .run(
+        displayTemperatureZWrapped(Scenario.Success)
+      )
+      .getOrThrowFiberFailure()
+  }
 // res8: String = "35 degrees"
 ```
 
 ```scala
-unsafeRun(
-  displayTemperatureZWrapped(
-    Scenario.NetworkError
-  )
-)
+Unsafe.unsafeCompat { implicit u =>
+    unsafe
+      .run(
+        displayTemperatureZWrapped(
+          Scenario.NetworkError
+        )
+      )
+      .getOrThrowFiberFailure()
+  }
 // res9: String = "Network Unavailable"
 ```
 
@@ -607,7 +635,7 @@ object value:
   // from an either into a ZIO.
 
   val zEither: UIO[Either[String, Int]] =
-    IO.fail("Boom").either
+    ZIO.fail("Boom").either
 
   // IO.fail("Boom") is naturally type
   // ZIO[R,String,Int], but is

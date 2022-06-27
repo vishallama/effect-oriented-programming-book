@@ -188,22 +188,25 @@ trait Has[A]
 ```scala
 package scenarios
 
-import zio.{ZIO, ZLayer}
-import zio.Clock
-import zio.Duration
+import zio.{
+  Duration,
+  Schedule,
+  Unsafe,
+  ZIO,
+  ZLayer,
+  durationInt
+}
 import zio.Console.printLine
-import zio.durationInt
-import zio.Schedule
+
 import scala.concurrent.TimeoutException
 import time.scheduledValues
 import izumi.reflect.Tag
-import zio.IsNotIntersection
 
 case class TempSense(
     z: ZIO[
-      Clock,
+      Any,
       HardwareFailure,
-      ZIO[Clock, TimeoutException, Degrees]
+      ZIO[Any, TimeoutException, Degrees]
     ]
 )
 
@@ -257,20 +260,20 @@ object SecuritySystem:
 
   def securityLoop(
       amountOfHeatGenerator: ZIO[
-        Clock,
+        Any,
         scala.concurrent.TimeoutException |
           scenarios.HardwareFailure,
         scenarios.Degrees
       ],
       amountOfMotion: Pixels,
       acousticDetector: ZIO[
-        Clock,
+        Any,
         scala.concurrent.TimeoutException |
           scenarios.HardwareFailure,
         scenarios.Decibels
       ]
   ): ZIO[
-    Clock & SirenX,
+    SirenX,
     scala.concurrent.TimeoutException |
       HardwareFailure,
     Unit
@@ -301,7 +304,7 @@ object SecuritySystem:
   def shouldAlertServices[
       T
         <: MotionDetector & ThermalDetectorX &
-          SirenX & AcousticDetectorX & Clock
+          SirenX & AcousticDetectorX
   ](): ZIO[
     T,
     scenarios.HardwareFailure | TimeoutException,
@@ -387,23 +390,26 @@ object LoudSiren extends SecurityResponse
 
 @main
 def useSecuritySystem =
-  import zio.Runtime.default.unsafeRun
+  import zio.Runtime.default.unsafe
   println(
     "Final result: " +
-      unsafeRun(
-        SecuritySystem
-          .shouldAlertServices()
-          .provide(
-            SecuritySystem.fullServiceBuilder ++
-              Clock.live
-          )
-          .catchSome {
-            case _: TimeoutException =>
-              printLine(
-                "Invalid Scenario. Ran out of sensor data."
+      Unsafe.unsafeCompat { implicit u =>
+        unsafe
+          .run(
+            SecuritySystem
+              .shouldAlertServices()
+              .provide(
+                SecuritySystem.fullServiceBuilder
               )
-          }
-      )
+              .catchSome {
+                case _: TimeoutException =>
+                  printLine(
+                    "Invalid Scenario. Ran out of sensor data."
+                  )
+              }
+          )
+          .getOrThrowFiberFailure()
+      }
   )
 end useSecuritySystem
 
@@ -441,8 +447,8 @@ end MotionDetector
 
 trait ThermalDetectorX:
   def heatMeasurementSource()
-      : ZIO[Clock, Nothing, ZIO[
-        Clock,
+      : ZIO[Any, Nothing, ZIO[
+        Any,
         TimeoutException |
           scenarios.HardwareFailure,
         Degrees
@@ -458,8 +464,8 @@ object ThermalDetectorX:
       // that same service we wrote above
       new ThermalDetectorX:
         override def heatMeasurementSource()
-            : ZIO[Clock, Nothing, ZIO[
-              Clock,
+            : ZIO[Any, Nothing, ZIO[
+              Any,
               TimeoutException |
                 scenarios.HardwareFailure,
               Degrees
@@ -469,11 +475,9 @@ object ThermalDetectorX:
   // This is preeeetty gnarly. How can we
   // improve?
   def acquireHeatMeasurementSource[
-      T
-        <: scenarios.ThermalDetectorX & Clock
-        : Tag
+      T <: scenarios.ThermalDetectorX: Tag
   ]: ZIO[T, Nothing, ZIO[
-    Clock,
+    Any,
     scala.concurrent.TimeoutException |
       scenarios.HardwareFailure,
     scenarios.Degrees
@@ -485,8 +489,8 @@ object ThermalDetectorX:
 end ThermalDetectorX
 
 trait AcousticDetectorX:
-  def acquireDetector(): ZIO[Clock, Nothing, ZIO[
-    Clock,
+  def acquireDetector(): ZIO[Any, Nothing, ZIO[
+    Any,
     TimeoutException | scenarios.HardwareFailure,
     Decibels
   ]]
@@ -501,8 +505,8 @@ object AcousticDetectorX:
       // that same service we wrote above
       new AcousticDetectorX:
         override def acquireDetector()
-            : ZIO[Clock, Nothing, ZIO[
-              Clock,
+            : ZIO[Any, Nothing, ZIO[
+              Any,
               TimeoutException |
                 scenarios.HardwareFailure,
               Decibels
@@ -512,11 +516,9 @@ object AcousticDetectorX:
   // This is preeeetty gnarly. How can we
   // improve?
   def acquireDetector[
-      T
-        <: scenarios.AcousticDetectorX & Clock
-        : Tag
+      T <: scenarios.AcousticDetectorX: Tag
   ]: ZIO[T, Nothing, ZIO[
-    Clock,
+    Any,
     scala.concurrent.TimeoutException |
       scenarios.HardwareFailure,
     scenarios.Decibels
@@ -589,9 +591,9 @@ end SirenX
 
 class SensorD[T](
     z: ZIO[
-      Clock,
+      Any,
       HardwareFailure,
-      ZIO[Clock, TimeoutException, T]
+      ZIO[Any, TimeoutException, T]
     ]
 )
 
@@ -599,9 +601,9 @@ class SensorD[T](
 object SensorData:
   def live[T, Y: zio.Tag](
       c: ZIO[
-        Clock,
+        Any,
         HardwareFailure,
-        ZIO[Clock, TimeoutException, T]
+        ZIO[Any, TimeoutException, T]
       ] => Y,
       value: (Duration, T),
       values: (Duration, T)*

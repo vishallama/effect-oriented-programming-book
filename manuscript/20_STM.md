@@ -18,7 +18,8 @@ package stm
 
 import zio.Console.printLine
 import zio.stm.{STM, TRef}
-import zio.Runtime.default.unsafeRun
+import zio.Runtime.default.unsafe
+import zio.Unsafe
 
 def transfer(
     from: TRef[Int],
@@ -54,7 +55,10 @@ def stmDemo() =
         )
     yield ()
 
-  unsafeRun(logic)
+  Unsafe.unsafeCompat { implicit u =>
+    unsafe.run(logic).getOrThrowFiberFailure()
+  }
+end stmDemo
 
 ```
 
@@ -65,8 +69,9 @@ package stm
 
 import zio.stm.STM
 import zio.stm.TRef
-import zio.Runtime.default.unsafeRun
+import zio.Runtime.default.unsafe
 import zio.Console.printLine
+import zio.Unsafe
 
 case class Cash(value: Int)
     extends Resource[Cash]
@@ -165,7 +170,9 @@ def resourcesDemo() =
       _ <- printLine(finalGrainVilleResources)
     yield ()
 
-  unsafeRun(logic)
+  Unsafe.unsafeCompat { implicit u =>
+    unsafe.run(logic).getOrThrowFiberFailure()
+  }
 end resourcesDemo
 
 def tradeResources[

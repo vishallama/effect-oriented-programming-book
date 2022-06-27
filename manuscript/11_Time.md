@@ -143,10 +143,10 @@ def scheduledValues[A](
     value: (Duration, A),
     values: (Duration, A)*
 ): ZIO[
-  Clock, // construction time
+  Any, // construction time
   Nothing,
   ZIO[
-    Clock, // access time
+    Any, // access time
     TimeoutException,
     A
   ]
@@ -198,7 +198,7 @@ private def createTimeTableX[A](
   */
 private def accessX[A](
     timeTable: Seq[ExpiringValue[A]]
-): ZIO[Clock, TimeoutException, A] =
+): ZIO[Any, TimeoutException, A] =
   for
     now <- Clock.instant
     result <-

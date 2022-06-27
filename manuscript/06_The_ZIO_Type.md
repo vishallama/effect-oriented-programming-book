@@ -74,9 +74,15 @@ import zio.{ZIO, ZIOAppDefault}
 import scala.concurrent.Future
 import mdoc.unsafeRunPrettyPrint
 val zFuture = ZIO.fromFuture(implicit ec => Future.successful("Success!"))
-// zFuture: ZIO[Any, Throwable, String] = zio.ZIO$Descriptor@669e0663
+// zFuture: ZIO[Any, Throwable, String] = Stateful(
+//   trace = "repl.MdocSession$.App.zFuture.macro(06_The_ZIO_Type.md:44)",
+//   onState = zio.ZIO$$$Lambda$14579/876539980@6b52e463
+// )
 val zFutureFailed = ZIO.fromFuture(implicit ec => Future.failed(new Exception("Failure :(")))
-// zFutureFailed: ZIO[Any, Throwable, Nothing] = zio.ZIO$Descriptor@73e22cf4
+// zFutureFailed: ZIO[Any, Throwable, Nothing] = Stateful(
+//   trace = "repl.MdocSession$.App.zFutureFailed.macro(06_The_ZIO_Type.md:48)",
+//   onState = zio.ZIO$$$Lambda$14579/876539980@768b2821
+// )
 unsafeRunPrettyPrint(zFuture)
 // Res: Success!
 // res0: String | Unit | String = "Success!"

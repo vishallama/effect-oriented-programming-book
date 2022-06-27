@@ -219,7 +219,18 @@ val fancyLodging: ZIO[
 ] =
   for hotel <- HotelApiZ.cheapest("90210")
   yield hotel
-// fancyLodging: ZIO[SystemStrict & HotelApiZ, Error, Hotel] = <function1>
+// fancyLodging: ZIO[SystemStrict & HotelApiZ, Error, Hotel] = OnSuccess(
+//   trace = "repl.MdocSession$.App.fancyLodging.macro(12_Environment_Variables.md:262)",
+//   first = OnSuccess(
+//     trace = "repl.MdocSession$.App.HotelApiZ$.cheapest.macro(12_Environment_Variables.md:226)",
+//     first = Sync(
+//       trace = "repl.MdocSession$.App.HotelApiZ$.cheapest.macro(12_Environment_Variables.md:226)",
+//       eval = zio.ZIOCompanionVersionSpecific$$Lambda$14641/1666868304@292001bd
+//     ),
+//     successK = zio.ZIO$$$Lambda$14612/1723987801@b87a189
+//   ),
+//   successK = zio.ZIO$$Lambda$14644/1367991032@56785544
+// )
 ```
 
 Original, unsafe:
@@ -241,7 +252,6 @@ It now reports the `System` and `HotelApiZ` dependencies of our function.
 This is what it looks like in action:
 
 ```scala
-import zio.Runtime.default.unsafeRun
 import zio.ZLayer
 import mdoc.unsafeRunPrettyPrint
 ```
@@ -326,7 +336,15 @@ val testApiLayer =
 ```
 
 ```scala
-unsafeRun(fancyLodging.provide(testApiLayer))
+import zio.Unsafe
+import zio.Runtime.default.unsafe
+  Unsafe.unsafeCompat { implicit u =>
+    unsafe
+      .run(
+          fancyLodging.provide(testApiLayer)
+      )
+      .getOrThrowFiberFailure()
+  }
 // error: 
 // Cannot call macro class Hotel defined in the same source file
 ```
@@ -372,23 +390,31 @@ trait Exercise1:
 
 
 ```scala
+import zio.Unsafe
+import zio.Runtime.default.unsafe
 val exercise1case1 =
-  unsafeRun(
-    Exercise1Solution
-      .envOrFail("key")
-      .provide(
-        TestSystem.live(
-          Data(envs = Map("key" -> "value"))
-        )
+  Unsafe.unsafeCompat { implicit u =>
+    unsafe
+      .run(
+        Exercise1Solution
+          .envOrFail("key")
+          .provide(
+            TestSystem.live(
+              Data(envs = Map("key" -> "value"))
+            )
+          )
       )
-  )
+      .getOrThrowFiberFailure()
+  }
 // exercise1case1: String = "value"
 assert(exercise1case1 == "value")
 ```
 
 ```scala
 val exercise1case2 =
-  unsafeRun(
+  Unsafe.unsafeCompat { implicit u =>
+    unsafe
+      .run(
     Exercise1Solution
       .envOrFail("key")
       .catchSome {
@@ -399,6 +425,8 @@ val exercise1case2 =
         TestSystem.live(Data(envs = Map()))
       )
   )
+      .getOrThrowFiberFailure()
+  }
 // exercise1case2: String = "Expected Error"
 
 assert(exercise1case2 == "Expected Error")

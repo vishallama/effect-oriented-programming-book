@@ -396,11 +396,7 @@ object ReadIntAndMultiply
             "11",
             "13"
           )
-        _ <-
-          logic.provideLayer(
-            Clock.live ++
-              ZLayer.succeed(fakeConsole)
-          )
+        _ <- logic.withConsole(fakeConsole)
       yield ()
     ).exitCode
   end run

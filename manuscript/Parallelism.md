@@ -21,10 +21,10 @@ object BasicFiber:
   object computation: // This object performs a computation that takes a long time. It is a recursive Fibonacci Sequence generator.
 
     def fib(n: Long): UIO[Long] =
-      UIO
+      ZIO
         .succeed {
           if (n <= 1)
-            UIO.succeed(n)
+            ZIO.succeed(n)
           else
             fib(n - 1).zipWith(fib(n - 2))(_ + _)
         }
@@ -79,8 +79,8 @@ class Compose:
 
   val helloGoodbye: UIO[Tuple] =
     for
-      greeting <- IO.succeed("Hello!").fork
-      farewell <- IO.succeed("GoodBye!").fork
+      greeting <- ZIO.succeed("Hello!").fork
+      farewell <- ZIO.succeed("GoodBye!").fork
       totalFiber =
         greeting.zip(
           farewell
@@ -96,10 +96,10 @@ class Compose:
   // first fails, the second will be used.
 
   val isPineapple: IO[String, String] =
-    IO.succeed("Pineapple!")
+    ZIO.succeed("Pineapple!")
 
   val notPineapple: IO[String, String] =
-    IO.fail("Banana...")
+    ZIO.fail("Banana...")
 
   val composeFruit: IO[String, String] =
     for
@@ -125,18 +125,19 @@ package Parallelism
 
 import java.io.IOException
 import zio.Console.printLine
-import zio.Console
 import zio.{
+  Console,
   Fiber,
   IO,
   Runtime,
+  Scope,
   UIO,
   URIO,
   ZIO,
   ZLayer
 }
 
-import scala.io.Source._
+import scala.io.Source.*
 
 object Finalizers extends zio.ZIOAppDefault:
 
@@ -150,23 +151,25 @@ object Finalizers extends zio.ZIOAppDefault:
   def finalizer(
       source: scala.io.Source
   ) = // Define the finalizer behavior here
-    UIO.succeed {
+    ZIO.succeed {
       println("Finalizing: Closing file reader")
       source.close // Close the input source
     }
 
   val readFileContents
-      : ZIO[Any, Throwable, Vector[String]] =
+      : ZIO[Scope, Throwable, Vector[String]] =
     ZIO
-      .succeed(
-        scala
-          .io
-          .Source
-          .fromFile(
-            "src/main/scala/Parallelism/csvFile.csv"
-          )
-      ) // Open the file to read its contents
-      .acquireReleaseWith(finalizer) {
+      .acquireRelease(
+        ZIO.succeed(
+          scala
+            .io
+            .Source
+            .fromFile(
+              "src/main/scala/Parallelism/csvFile.csv"
+            )
+        )
+      )(finalizer)
+      .map {
         bufferedSource => // Use the bracket method with the finalizer defined above to define behavior on fail.
 
           val lines =
@@ -178,14 +181,14 @@ object Finalizers extends zio.ZIOAppDefault:
           ) // Simulating an enexpected error/exception
             throw new IOException("Boom!")
 
-          ZIO.succeed(Vector() ++ lines)
+          Vector() ++ lines
       }
 
   def run = // Use App's run function
     println("In main")
 
     val ioExample: ZIO[
-      Any,
+      Scope,
       Throwable,
       Unit
     ] = // Define the ZIO contexts
@@ -279,10 +282,10 @@ class Join:
   object computation:
 
     def fib(n: Long): UIO[Long] =
-      UIO
+      ZIO
         .succeed {
           if (n <= 1)
-            UIO.succeed(n)
+            ZIO.succeed(n)
           else
             fib(n - 1).zipWith(fib(n - 2))(_ + _)
         }
@@ -297,15 +300,16 @@ end Join
 package Parallelism
 
 import java.io.IOException
-import zio.durationInt
 import zio.{
   Fiber,
   IO,
   Runtime,
   UIO,
+  Unsafe,
   ZIO,
   ZIOAppDefault,
-  ZLayer
+  ZLayer,
+  durationInt
 }
 
 import scala.concurrent.Await
@@ -323,9 +327,14 @@ object JustSleep extends ZIOAppDefault:
 @main
 def ToFuture() =
   Await.result(
-    Runtime
-      .default
-      .unsafeRunToFuture(ZIO.sleep(1.seconds)),
+    Unsafe.unsafeCompat { implicit u =>
+      zio
+        .Runtime
+        .default
+        .unsafe
+        .runToFuture(ZIO.sleep(1.seconds))
+//        .getOrThrowFiberFailure()
+    },
     scala.concurrent.duration.Duration.Inf
   )
 

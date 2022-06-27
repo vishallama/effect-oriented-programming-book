@@ -125,7 +125,7 @@ object LoseInTwoChances extends ZIOAppDefault:
 ```scala
 package random
 
-import zio.{Tag, UIO, ZEnv, ZIO, ZIOAppArgs}
+import zio.{Tag, UIO, ZIO, ZIOAppArgs}
 import scala.util.Random
 
 trait RandomBoundedInt:
@@ -213,9 +213,9 @@ object RandomBoundedIntFake:
 ```scala
 package random
 
-import zio.{Console, UIO, ZIO, ZLayer}
-import zio.Runtime.default.unsafeRun
+import zio.{Console, UIO, Unsafe, ZIO, ZLayer}
 import console.FakeConsole
+import zio.Runtime.default.unsafe
 
 val low  = 1
 val high = 10
@@ -244,11 +244,15 @@ val sideEffectingGuessingGame =
 
 @main
 def runSideEffectingGuessingGame =
-  unsafeRun(
-    sideEffectingGuessingGame.provideLayer(
-      ZLayer.succeed(FakeConsole.single("3"))
-    )
-  )
+  Unsafe.unsafeCompat { implicit u =>
+    unsafe
+      .run(
+        sideEffectingGuessingGame.provideLayer(
+          ZLayer.succeed(FakeConsole.single("3"))
+        )
+      )
+      .getOrThrowFiberFailure()
+  }
 
 import zio.Console.printLine
 
@@ -263,12 +267,17 @@ val effectfulGuessingGame =
 
 @main
 def runEffectfulGuessingGame =
-  unsafeRun(
-    effectfulGuessingGame.provideLayer(
-      ZLayer.succeed(FakeConsole.single("3")) ++
-        RandomBoundedInt.live
-    )
-  )
+  Unsafe.unsafeCompat { implicit u =>
+    unsafe
+      .run(
+        effectfulGuessingGame.provideLayer(
+          ZLayer
+            .succeed(FakeConsole.single("3")) ++
+            RandomBoundedInt.live
+        )
+      )
+      .getOrThrowFiberFailure()
+  }
 
 ```
 
@@ -285,7 +294,7 @@ import zio.{
   UIO,
   ZIO,
   ZLayer,
-  ZTraceElement
+  Trace
 }
 import zio.Console.printLine
 
@@ -293,67 +302,63 @@ import java.util.UUID
 
 class RandomZIOFake(i: Int) extends Random:
   def nextUUID(implicit
-      trace: ZTraceElement
+      trace: Trace
   ): UIO[UUID] = ???
   def nextBoolean(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[Boolean] = ???
   def nextBytes(length: => Int)(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[zio.Chunk[Byte]] = ???
   def nextDouble(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[Double] = ???
   def nextDoubleBetween(
       minInclusive: => Double,
       maxExclusive: => Double
-  )(implicit
-      trace: zio.ZTraceElement
-  ): zio.UIO[Double] = ???
+  )(implicit trace: zio.Trace): zio.UIO[Double] =
+    ???
   def nextFloat(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[Float] = ???
   def nextFloatBetween(
       minInclusive: => Float,
       maxExclusive: => Float
-  )(implicit
-      trace: zio.ZTraceElement
-  ): zio.UIO[Float] = ???
+  )(implicit trace: zio.Trace): zio.UIO[Float] =
+    ???
   def nextGaussian(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[Double] = ???
   def nextInt(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[Int] = ???
   def nextIntBetween(
       minInclusive: => Int,
       maxExclusive: => Int
-  )(implicit
-      trace: zio.ZTraceElement
-  ): zio.UIO[Int] = ???
+  )(implicit trace: zio.Trace): zio.UIO[Int] =
+    ???
   def nextIntBounded(n: => Int)(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[Int] = ???
   def nextLong(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[Long] = ???
   def nextLongBetween(
       minInclusive: => Long,
       maxExclusive: => Long
-  )(implicit
-      trace: zio.ZTraceElement
-  ): zio.UIO[Long] = ???
+  )(implicit trace: zio.Trace): zio.UIO[Long] =
+    ???
   def nextLongBounded(n: => Long)(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[Long] = ???
   def nextPrintableChar(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[Char] = ???
   def nextString(length: => Int)(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[String] = ???
   def setSeed(seed: => Long)(implicit
-      trace: zio.ZTraceElement
+      trace: zio.Trace
   ): zio.UIO[Unit] = ???
   def shuffle[A, Collection[+Element]
     <: Iterable[Element]](
@@ -362,7 +367,7 @@ class RandomZIOFake(i: Int) extends Random:
       bf: BuildFrom[Collection[A], A, Collection[
         A
       ]],
-      trace: ZTraceElement
+      trace: Trace
   ): UIO[Collection[A]] = ???
 
 end RandomZIOFake

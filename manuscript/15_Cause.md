@@ -16,7 +16,7 @@ Consider an Evolutionary example, where a `Cause` allows us to track MutationExc
 ```scala
 package cause
 
-import zio.{ZEnv, ZIO, ZIOAppDefault}
+import zio.{ZIO, ZIOAppDefault}
 
 object MalcomInTheMiddle extends ZIOAppDefault:
   def run =
@@ -84,7 +84,7 @@ end MalcomInTheMiddle
 ```scala
 package cause
 
-import zio.{ZEnv, ZIO}
+import zio.ZIO
 import zio.Console._
 import zio.Cause
 
