@@ -89,9 +89,9 @@ val unreliableCounting =
 //   trace = "repl.MdocSession$.App.unreliableCounting.macro(10_Mutability.md:45)",
 //   first = Stateful(
 //     trace = "repl.MdocSession$.App.unreliableCounting.macro(10_Mutability.md:44)",
-//     onState = zio.FiberRef$$anon$2$$Lambda$14672/1394196496@562a15f4
+//     onState = zio.FiberRef$$anon$2$$Lambda$14722/1430162080@66c0d421
 //   ),
-//   successK = zio.ZIO$$Lambda$14644/1367991032@28d8e17f
+//   successK = zio.ZIO$$Lambda$14694/1818956407@4f0e611d
 // )
 
 unsafeRunPrettyPrint(unreliableCounting)
@@ -120,9 +120,9 @@ val reliableCounting =
 //   trace = "repl.MdocSession$.App.reliableCounting.macro(10_Mutability.md:68)",
 //   first = Sync(
 //     trace = "repl.MdocSession$.App.reliableCounting.macro(10_Mutability.md:62)",
-//     eval = zio.ZIOCompanionVersionSpecific$$Lambda$14641/1666868304@4ab65129
+//     eval = zio.ZIOCompanionVersionSpecific$$Lambda$14691/1565242622@42dbe2a2
 //   ),
-//   successK = repl.MdocSession$App$$Lambda$14880/106023957@4d93293a
+//   successK = repl.MdocSession$App$$Lambda$14930/321417900@449e888d
 // )
 
 unsafeRunPrettyPrint(reliableCounting)
