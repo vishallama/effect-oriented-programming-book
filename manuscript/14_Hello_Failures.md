@@ -221,9 +221,7 @@ def getTemperatureZ(behavior: Scenario): ZIO[
 
 Unsafe.unsafeCompat { implicit u =>
   unsafe
-    .run(
-       getTemperatureZ(Scenario.Success)
-    )
+    .run(getTemperatureZ(Scenario.Success))
     .getOrThrowFiberFailure()
 }
 // res6: String = "30 degrees"
@@ -231,37 +229,35 @@ Unsafe.unsafeCompat { implicit u =>
 
 ```scala
 Unsafe.unsafeCompat { implicit u =>
-    unsafe
-      .run(
-        getTemperatureZ(Scenario.Success).catchAll {
-          case ex: NetworkException =>
-            ZIO.succeed("Network Unavailable")
+  unsafe
+    .run(
+      getTemperatureZ(Scenario.Success)
+        .catchAll { case ex: NetworkException =>
+          ZIO.succeed("Network Unavailable")
         }
-      )
-      .getOrThrowFiberFailure()
-  }
+    )
+    .getOrThrowFiberFailure()
+}
 // error:
 // match may not be exhaustive.
 // 
 // It would fail on pattern case: _: GpsException
 // 
-//   Unsafe.unsafeCompat { implicit u =>
-//                                   ^
+//       )
+//      ^
 ```
 
 TODO Demonstrate ZIO calculating the error types without an explicit annotation being provided
 
 ```scala
-  Unsafe.unsafeCompat { implicit u =>
-    unsafe
-      .run(
-         getTemperatureZ(Scenario.GPSError)
-      )
-      .getOrThrowFiberFailure()
-  }
+Unsafe.unsafeCompat { implicit u =>
+  unsafe
+    .run(getTemperatureZ(Scenario.GPSError))
+    .getOrThrowFiberFailure()
+}
 // Exception in thread "zio-fiber-20016" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
 // 	at repl.MdocSession$.App.<local App>.getTemperatureZ.macro(14_Hello_Failures.md:151)
-// 	at repl.MdocSession$.App.<local App>.macro(14_Hello_Failures.md:183)
+// 	at repl.MdocSession$.App.<local App>.macro(14_Hello_Failures.md:179)
 ```
 
 ### Wrapping Legacy Code
@@ -293,26 +289,28 @@ def displayTemperatureZWrapped(
 
 ```scala
 import zio.Runtime.default.unsafe
-  Unsafe.unsafeCompat { implicit u =>
-    unsafe
-      .run(
-        displayTemperatureZWrapped(Scenario.Success)
+Unsafe.unsafeCompat { implicit u =>
+  unsafe
+    .run(
+      displayTemperatureZWrapped(
+        Scenario.Success
       )
-      .getOrThrowFiberFailure()
-  }
+    )
+    .getOrThrowFiberFailure()
+}
 // res8: String = "35 degrees"
 ```
 
 ```scala
 Unsafe.unsafeCompat { implicit u =>
-    unsafe
-      .run(
-        displayTemperatureZWrapped(
-          Scenario.NetworkError
-        )
+  unsafe
+    .run(
+      displayTemperatureZWrapped(
+        Scenario.NetworkError
       )
-      .getOrThrowFiberFailure()
-  }
+    )
+    .getOrThrowFiberFailure()
+}
 // res9: String = "Network Unavailable"
 ```
 

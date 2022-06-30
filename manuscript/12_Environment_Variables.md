@@ -225,11 +225,11 @@ val fancyLodging: ZIO[
 //     trace = "repl.MdocSession$.App.HotelApiZ$.cheapest.macro(12_Environment_Variables.md:226)",
 //     first = Sync(
 //       trace = "repl.MdocSession$.App.HotelApiZ$.cheapest.macro(12_Environment_Variables.md:226)",
-//       eval = zio.ZIOCompanionVersionSpecific$$Lambda$13992/797232680@3a98048f
+//       eval = zio.ZIOCompanionVersionSpecific$$Lambda$13998/1650920769@1757c0fc
 //     ),
-//     successK = zio.ZIO$$$Lambda$13963/1538543707@1abbccac
+//     successK = zio.ZIO$$$Lambda$13969/91645356@40a69ac
 //   ),
-//   successK = zio.ZIO$$Lambda$13995/875650707@7f3ab935
+//   successK = zio.ZIO$$Lambda$14001/1058433122@7563371d
 // )
 ```
 
@@ -338,13 +338,11 @@ val testApiLayer =
 ```scala
 import zio.Unsafe
 import zio.Runtime.default.unsafe
-  Unsafe.unsafeCompat { implicit u =>
-    unsafe
-      .run(
-          fancyLodging.provide(testApiLayer)
-      )
-      .getOrThrowFiberFailure()
-  }
+Unsafe.unsafeCompat { implicit u =>
+  unsafe
+    .run(fancyLodging.provide(testApiLayer))
+    .getOrThrowFiberFailure()
+}
 // error: 
 // Cannot call macro class Hotel defined in the same source file
 ```
@@ -415,16 +413,16 @@ val exercise1case2 =
   Unsafe.unsafeCompat { implicit u =>
     unsafe
       .run(
-    Exercise1Solution
-      .envOrFail("key")
-      .catchSome {
-        case _: NoSuchElementException =>
-          ZIO.succeed("Expected Error")
-      }
-      .provide(
-        TestSystem.live(Data(envs = Map()))
+        Exercise1Solution
+          .envOrFail("key")
+          .catchSome {
+            case _: NoSuchElementException =>
+              ZIO.succeed("Expected Error")
+          }
+          .provide(
+            TestSystem.live(Data(envs = Map()))
+          )
       )
-  )
       .getOrThrowFiberFailure()
   }
 // exercise1case2: String = "Expected Error"

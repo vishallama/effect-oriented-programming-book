@@ -89,13 +89,13 @@ val unreliableCounting =
 //   trace = "repl.MdocSession$.App.unreliableCounting.macro(10_Mutability.md:45)",
 //   first = Stateful(
 //     trace = "repl.MdocSession$.App.unreliableCounting.macro(10_Mutability.md:44)",
-//     onState = zio.FiberRef$$anon$2$$Lambda$14023/1534989979@713494ba
+//     onState = zio.FiberRef$$anon$2$$Lambda$14029/872948057@66a1e95a
 //   ),
-//   successK = zio.ZIO$$Lambda$13995/875650707@5307e2a0
+//   successK = zio.ZIO$$Lambda$14001/1058433122@2e5bcf7b
 // )
 
 unsafeRunPrettyPrint(unreliableCounting)
-// res0: String | Unit | String = "Final count: 10000"
+// res0: String | Unit | String = "Final count: 9999"
 ```
 
 Performing our side effects inside ZIO's does not magically make them safe.
@@ -120,9 +120,9 @@ val reliableCounting =
 //   trace = "repl.MdocSession$.App.reliableCounting.macro(10_Mutability.md:68)",
 //   first = Sync(
 //     trace = "repl.MdocSession$.App.reliableCounting.macro(10_Mutability.md:62)",
-//     eval = zio.ZIOCompanionVersionSpecific$$Lambda$13992/797232680@47de6af1
+//     eval = zio.ZIOCompanionVersionSpecific$$Lambda$13998/1650920769@279e885
 //   ),
-//   successK = repl.MdocSession$App$$Lambda$14231/960635371@4869d752
+//   successK = repl.MdocSession$App$$Lambda$14235/240639533@26aa606b
 // )
 
 unsafeRunPrettyPrint(reliableCounting)
@@ -194,14 +194,18 @@ import java.lang
 object UnsafeEffectsInsideAtomicRefs
     extends ZIOAppDefault:
 
-  def wasteTime(): Seq[IndexedSeq[Int]] =
-    for (x <- Range(0, 1000))
-      yield for (y <- Range(0, 1000))
-        yield x + y
+  def wasteTime(
+      size: Int
+  ): Seq[IndexedSeq[Int]] =
+    for x <- Range(0, size)
+    yield for y <- Range(0, size)
+    yield x + y
 
   var updateAttempts = 0
   val reliableCounting =
     for
+      // Ref.Synchronized guarantees only a
+      // single
       counter <- Ref.make(0)
       _ <-
         ZIO.foreachParDiscard(Range(0, 10000))(
@@ -219,7 +223,7 @@ object UnsafeEffectsInsideAtomicRefs
               // the longer the operation takes,
               // the higher the likelihood of a
               // compare-and-swap retry.
-              wasteTime()
+              wasteTime(35)
               updateAttempts += 1
               previousValue + 1
             }
