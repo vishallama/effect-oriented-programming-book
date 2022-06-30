@@ -89,9 +89,9 @@ val unreliableCounting =
 //   trace = "repl.MdocSession$.App.unreliableCounting.macro(10_Mutability.md:45)",
 //   first = Stateful(
 //     trace = "repl.MdocSession$.App.unreliableCounting.macro(10_Mutability.md:44)",
-//     onState = zio.FiberRef$$anon$2$$Lambda$14027/1986004432@3078dfde
+//     onState = zio.FiberRef$$anon$2$$Lambda$14023/1534989979@713494ba
 //   ),
-//   successK = zio.ZIO$$Lambda$13999/1120354230@ba4c348
+//   successK = zio.ZIO$$Lambda$13995/875650707@5307e2a0
 // )
 
 unsafeRunPrettyPrint(unreliableCounting)
@@ -120,9 +120,9 @@ val reliableCounting =
 //   trace = "repl.MdocSession$.App.reliableCounting.macro(10_Mutability.md:68)",
 //   first = Sync(
 //     trace = "repl.MdocSession$.App.reliableCounting.macro(10_Mutability.md:62)",
-//     eval = zio.ZIOCompanionVersionSpecific$$Lambda$13996/1867081096@3bf745d
+//     eval = zio.ZIOCompanionVersionSpecific$$Lambda$13992/797232680@47de6af1
 //   ),
-//   successK = repl.MdocSession$App$$Lambda$14235/1351816468@5d46a295
+//   successK = repl.MdocSession$App$$Lambda$14231/960635371@4869d752
 // )
 
 unsafeRunPrettyPrint(reliableCounting)
@@ -179,6 +179,57 @@ object ComplexRefs extends ZIOAppDefault:
   def run = readFromSensors
 
 end ComplexRefs
+
+```
+
+
+### experiments/src/main/scala/mutability/UnsafeEffectsInsideAtomicRefs.scala
+```scala
+package mutability
+
+import zio.{Ref, ZIO, ZIOAppDefault}
+
+import java.lang
+
+object UnsafeEffectsInsideAtomicRefs
+    extends ZIOAppDefault:
+
+  def wasteTime(): Seq[IndexedSeq[Int]] =
+    for (x <- Range(0, 1000))
+      yield for (y <- Range(0, 1000))
+        yield x + y
+
+  var updateAttempts = 0
+  val reliableCounting =
+    for
+      counter <- Ref.make(0)
+      _ <-
+        ZIO.foreachParDiscard(Range(0, 10000))(
+          i =>
+            counter.update { previousValue =>
+              // This is dangerous because using
+              // a non-synchronized Ref might
+              // retry this block many times
+              // before succeeding
+              // Pure functions can be
+              // re-executed an arbitrary number
+              // of times, but side effects have
+              // to happen exactly once.
+              // The higher the parallelism, or
+              // the longer the operation takes,
+              // the higher the likelihood of a
+              // compare-and-swap retry.
+              wasteTime()
+              updateAttempts += 1
+              previousValue + 1
+            }
+        )
+      finalResult <- counter.get
+    yield "Final count: " + finalResult +
+      "  updateAttempts: " + updateAttempts
+
+  def run = reliableCounting.debug
+end UnsafeEffectsInsideAtomicRefs
 
 ```
 

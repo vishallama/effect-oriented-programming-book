@@ -76,12 +76,12 @@ import mdoc.unsafeRunPrettyPrint
 val zFuture = ZIO.fromFuture(implicit ec => Future.successful("Success!"))
 // zFuture: ZIO[Any, Throwable, String] = Stateful(
 //   trace = "repl.MdocSession$.App.zFuture.macro(06_The_ZIO_Type.md:44)",
-//   onState = zio.ZIO$$$Lambda$13934/1775469461@6540e1c5
+//   onState = zio.ZIO$$$Lambda$13930/181721746@37aecd1f
 // )
 val zFutureFailed = ZIO.fromFuture(implicit ec => Future.failed(new Exception("Failure :(")))
 // zFutureFailed: ZIO[Any, Throwable, Nothing] = Stateful(
 //   trace = "repl.MdocSession$.App.zFutureFailed.macro(06_The_ZIO_Type.md:48)",
-//   onState = zio.ZIO$$$Lambda$13934/1775469461@1c4f8667
+//   onState = zio.ZIO$$$Lambda$13930/181721746@6264ee17
 // )
 unsafeRunPrettyPrint(zFuture)
 // Res: Success!
