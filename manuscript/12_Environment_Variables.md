@@ -225,11 +225,11 @@ val fancyLodging: ZIO[
 //     trace = "repl.MdocSession$.App.HotelApiZ$.cheapest.macro(12_Environment_Variables.md:226)",
 //     first = Sync(
 //       trace = "repl.MdocSession$.App.HotelApiZ$.cheapest.macro(12_Environment_Variables.md:226)",
-//       eval = zio.ZIOCompanionVersionSpecific$$Lambda$13998/1650920769@1757c0fc
+//       eval = zio.ZIOCompanionVersionSpecific$$Lambda$14023/2091346364@9802dfb
 //     ),
-//     successK = zio.ZIO$$$Lambda$13969/91645356@40a69ac
+//     successK = zio.ZIO$$$Lambda$13978/963628417@5631b979
 //   ),
-//   successK = zio.ZIO$$Lambda$14001/1058433122@7563371d
+//   successK = zio.ZIO$$Lambda$13970/625782313@614a329b
 // )
 ```
 
@@ -271,7 +271,7 @@ unsafeRunPrettyPrint(
       originalAuthor
   )
 )
-// res7: Hotel | Unit | String = Hotel(name = "Eddy's Roach Motel")
+// res7: String = "Hotel(Eddy's Roach Motel)"
 ```
 
 **Collaborator's Machine:**
@@ -291,7 +291,7 @@ unsafeRunPrettyPrint(
       collaborater
   )
 )
-// res9: Hotel | Unit | String = ()
+// res9: String = "Error(Invalid API Key)"
 ```
 
 **Continuous Integration Server:**
@@ -307,7 +307,7 @@ unsafeRunPrettyPrint(
     System.live >>> SystemStrict.live >+> ci
   )
 )
-// res11: Hotel | Unit | String = ()
+// res11: String = "Error(Unconfigured Environment)"
 ```
 
 TODO{{The actual line looks the same, which I highlighted as a problem before. How should we indicate that the Environment is different?}}

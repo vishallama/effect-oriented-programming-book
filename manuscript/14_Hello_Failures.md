@@ -255,7 +255,7 @@ Unsafe.unsafeCompat { implicit u =>
     .run(getTemperatureZ(Scenario.GPSError))
     .getOrThrowFiberFailure()
 }
-// Exception in thread "zio-fiber-20016" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
+// Exception in thread "zio-fiber-20026" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
 // 	at repl.MdocSession$.App.<local App>.getTemperatureZ.macro(14_Hello_Failures.md:151)
 // 	at repl.MdocSession$.App.<local App>.macro(14_Hello_Failures.md:179)
 ```
