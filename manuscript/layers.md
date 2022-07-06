@@ -6,38 +6,45 @@
 ```scala
 package layers
 
-import zio.{ZIO, ZLayer}
+import zio.{ZIO, ZLayer, Duration}
+import zio.ZIO.debug
 import zio.durationInt
 
 case class Toilets()
 val toilets =
   ZLayer.scoped(
     ZIO.acquireRelease(
-      ZIO.debug("Setting up toilets") *>
+      debug("TOILETS: Setting up") *>
         ZIO.succeed(Toilets())
-    )(_ => ZIO.debug("Removing toilets"))
+    )(_ => debug("TOILETS: Removing"))
   )
 case class Stage()
 val stage =
   ZLayer.scoped(
     ZIO.acquireRelease(
-      ZIO.debug("Building stage") *>
-        ZIO.succeed(Stage())
-    )(_ => ZIO.debug("Tearing down stage"))
+      activity(
+        "STAGE",
+        "Transporting",
+        2.seconds
+      ) *>
+        activity(
+          "STAGE",
+          "Building",
+          4.seconds
+        ) *> ZIO.succeed(Stage())
+    )(_ => debug("STAGE: Tearing down"))
   )
 
 case class Permit()
 val permit =
   ZLayer.scoped(
     ZIO.acquireRelease(
-      ZIO.debug(
-        "PERMIT: Submitted legal request"
-      ) *>
-        ZIO
-          .debug("PERMIT: Granted")
-          .delay(5.seconds) *>
-        ZIO.succeed(Permit())
-    )(_ => ZIO.debug("PERMIT: Relinquished"))
+      activity(
+        "PERMIT",
+        "Legal Request",
+        5.seconds
+      ) *> ZIO.succeed(Permit())
+    )(_ => debug("PERMIT: Relinquished"))
   )
 
 case class Venue(stage: Stage, permit: Permit)
@@ -47,35 +54,33 @@ case class Speakers()
 val speakers =
   ZLayer.scoped(
     ZIO.acquireRelease(
-      ZIO.debug("Positioning speakers") *>
+      debug("SPEAKERS: Positioning") *>
         ZIO.succeed(Speakers())
-    )(_ => ZIO.debug("Packing up speakers"))
+    )(_ => debug("SPEAKERS: Packing up"))
   )
 case class Amplifiers()
 val amplifiers =
   ZLayer.scoped(
     ZIO.acquireRelease(
-      ZIO.debug("Positioning amplifiers") *>
+      debug("AMPLIFIERS: Positioning") *>
         ZIO.succeed(Amplifiers())
-    )(_ => ZIO.debug("Putting away amplifiers"))
+    )(_ => debug("AMPLIFIERS: Putting away"))
   )
 case class Wires()
 val wires =
   ZLayer.scoped(
     ZIO.acquireRelease(
-      ZIO.debug(
-        "Unrolling and laying out wires"
-      ) *> ZIO.succeed(Wires())
-    )(_ => ZIO.debug("Spooling up wires"))
+      debug("WIRES: Unrolling") *>
+        ZIO.succeed(Wires())
+    )(_ => debug("WIRES: Spooling up"))
   )
 case class Fencing()
 val fencing =
   ZLayer.scoped(
     ZIO.acquireRelease(
-      ZIO.debug(
-        "Surrounding the area in fenching"
-      ) *> ZIO.succeed(Fencing())
-    )(_ => ZIO.debug("Tearing down fencing"))
+      debug("FENCING: Surrounding the area") *>
+        ZIO.succeed(Fencing())
+    )(_ => debug("FENCING: Tearing down"))
   )
 case class SoundSystem(
     speakers: Speakers,
@@ -89,12 +94,12 @@ val soundSystem =
     scoped <-
       ZLayer.scoped {
         ZIO.acquireRelease(
-          ZIO.debug(
-            "Hooking up speakers, amplifiers, and wires"
+          debug(
+            "SOUNDSYSTEM: Hooking up speakers, amplifiers, and wires"
           ) *> ZIO.succeed(layer.get)
         )(_ =>
-          ZIO.debug(
-            "Disconnecting speakers, amplifiers, and wires"
+          debug(
+            "SOUNDSYSTEM: Disconnecting speakers, amplifiers, and wires"
           )
         )
       }
@@ -111,13 +116,13 @@ val soundSystemShortedOut: ZLayer[
     scoped <-
       ZLayer.scoped {
         ZIO.acquireRelease(
-          ZIO.debug(
-            "Hooking up speakers, amplifiers, and wires"
+          debug(
+            "SOUNDSYSTEM: Hooking up speakers, amplifiers, and wires"
           ) *> ZIO.fail("BZZZZ") *>
             ZIO.succeed(layer.get)
         )(_ =>
-          ZIO.debug(
-            "Disconnecting speakers, amplifiers, and wires"
+          debug(
+            "SOUNDSYSTEM: Disconnecting speakers, amplifiers, and wires"
           )
         )
       }
@@ -127,12 +132,13 @@ case class FoodTruck()
 val foodtruck =
   ZLayer.scoped(
     ZIO.acquireRelease(
-      ZIO.debug("Driving in FoodTruck") *>
-        ZIO
-          .debug("FOODTRUCK: Done fueling")
-          .delay(2.seconds) *>
-        ZIO.succeed(FoodTruck())
-    )(_ => ZIO.debug("Driving out FoodTruck"))
+      debug("FOODTRUCK:  Driving in ") *>
+        activity(
+          "FOODTRUCK",
+          "Fueling",
+          2.seconds
+        ) *> ZIO.succeed(FoodTruck())
+    )(_ => debug("FOODTRUCK: Driving out "))
   )
 
 case class Festival(
@@ -149,11 +155,11 @@ val festival =
     scoped <-
       ZLayer.scoped {
         ZIO.acquireRelease(
-          ZIO.debug("We are all set!") *>
+          debug("FESTIVAL: We are all set!") *>
             ZIO.succeed(layer.get)
         )(_ =>
-          ZIO.debug(
-            "Good festival, everyone. Close it down!"
+          debug(
+            "FESTIVAL: Good job, everyone. Close it down!"
           )
         )
       }
@@ -165,6 +171,14 @@ case class Security(
 )
 val security =
   ZLayer.fromFunction(Security.apply)
+
+def activity(
+    entity: String,
+    name: String,
+    duration: Duration
+) =
+  debug(s"$entity: BEGIN $name") *>
+    debug(s"$entity: END $name").delay(duration)
 
 ```
 
