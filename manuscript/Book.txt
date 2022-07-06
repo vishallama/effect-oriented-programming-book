@@ -24,6 +24,7 @@ resourcemanagement.md
 microcontrollers.md
 diningphilosophers.md
 interpreter-chaining_previous_result_and_environmental_dependency.md
+layers.md
 javawrappers.md
 zioBasics.md
 interpreter-level1_nochaining.md
@@ -36,6 +37,7 @@ TicTacToe.md
 runtime.md
 crypto.md
 environment_exploration-opaque.md
+simulations.md
 HelloZio.md
 Parallelism.md
 game_theory.md
@@ -44,6 +46,8 @@ fibers.md
 atomic-realZIO.md
 prelude.md
 interpreter-chaining_with_previous_result.md
+experiments-src-test-scala-zio_test.md
+experiments-src-test-scala-layers.md
 experiments-src-test-scala-bigdec.md
 zio_intro.md
 interpreter-chaining_with_monads.md
