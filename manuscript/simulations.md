@@ -31,7 +31,14 @@ object Evolution extends ZIOAppDefault:
     override def toString() =
       coordinates
         .map(row =>
-          row.map(column => '\u25a1').mkString
+          row
+            .map(column =>
+              if (column.food > 0)
+                '*'
+              else
+                '\u25a1'
+            )
+            .mkString
         )
         .mkString("\n")
 
@@ -41,7 +48,7 @@ object Evolution extends ZIOAppDefault:
         List.fill(rows)(
           List.fill(columns)(
             Coordinate(
-              0,
+              1,
               Percentage(10),
               occupant = None
             )

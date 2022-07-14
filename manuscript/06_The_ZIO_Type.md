@@ -79,7 +79,7 @@ val zFuture =
   )
 // zFuture: ZIO[Any, Throwable, String] = Stateful(
 //   trace = "repl.MdocSession$.App.zFuture.macro(06_The_ZIO_Type.md:47)",
-//   onState = zio.ZIO$$$Lambda$13883/1911619487@6e982d2a
+//   onState = zio.ZIO$$$Lambda$13819/675903589@6fc35f62
 // )
 val zFutureFailed =
   ZIO.fromFuture(implicit ec =>
@@ -87,7 +87,7 @@ val zFutureFailed =
   )
 // zFutureFailed: ZIO[Any, Throwable, Nothing] = Stateful(
 //   trace = "repl.MdocSession$.App.zFutureFailed.macro(06_The_ZIO_Type.md:54)",
-//   onState = zio.ZIO$$$Lambda$13883/1911619487@7eab0671
+//   onState = zio.ZIO$$$Lambda$13819/675903589@7cbb616b
 // )
 unsafeRunPrettyPrint(zFuture)
 // res0: String = "Success!"
@@ -95,110 +95,3 @@ unsafeRunPrettyPrint(zFutureFailed)
 // Should handle errors
 // res1: String = "java.lang.Exception: Failure :("
 ```
-
-## Automatically attached experiments.
- These are included at the end of this
- chapter because their package in the
- experiments directory matched the name
- of this chapter. Enjoy working on the
- code with full editor capabilities :D
-
- 
-
-### experiments/src/main/scala/the_zio_type/EitherToZio.scala
-```scala
-// EitherToZio.scala
-package the_zio_type
-
-import zio.{ZIO, ZIOAppDefault}
-
-import scala.util.{Left, Right}
-
-case class InvalidIntegerInput(value: String)
-
-object EitherToZio extends ZIOAppDefault:
-  val goodInt: Either[InvalidIntegerInput, Int] =
-    Right(42)
-
-  val zEither
-      : ZIO[Any, InvalidIntegerInput, Int] =
-    ZIO.fromEither(goodInt)
-
-  def run = zEither.debug("Converted Either")
-
-```
-
-
-### experiments/src/main/scala/the_zio_type/FutureToZio.scala
-```scala
-package the_zio_type
-
-import zio.{ZIO, ZIOAppDefault}
-import scala.concurrent.Future
-
-object FutureToZio extends ZIOAppDefault:
-
-  val zFuture =
-    ZIO.fromFuture(implicit ec =>
-      Future.successful("Success!")
-    )
-
-  val zFutureFailed =
-    ZIO.fromFuture(implicit ec =>
-      Future.failed(new Exception("Failure :("))
-    )
-
-  val run =
-    zFutureFailed.debug("Converted Future")
-
-```
-
-
-### experiments/src/main/scala/the_zio_type/OptionToZio.scala
-```scala
-package the_zio_type
-
-import java.io
-import zio._
-import java.io.IOException
-
-class OptionToZio extends ZIOAppDefault:
-
-  val alias: Option[String] =
-    Some("Buddy") // sOption is either 1 or None
-
-  val aliasZ: IO[Option[Nothing], String] =
-    ZIO.fromOption(alias)
-
-  val run = aliasZ
-
-```
-
-
-### experiments/src/main/scala/the_zio_type/TryToZio.scala
-```scala
-package the_zio_type
-
-import zio._
-import java.io
-import java.io.IOException
-import scala.util.Try
-
-object TryToZio extends ZIOAppDefault:
-  val dividend = 42
-  val divisor  = 7
-
-  // Significant Note: Try is a standard
-  // collection by-name function. This makes
-  // it a good candidate for introducting that
-  // concept.
-  def sTry: Try[Int] = Try(dividend / divisor)
-
-  val zTry: IO[Throwable, Int] =
-    ZIO.fromTry(sTry)
-
-  val run = zTry
-
-```
-
-            

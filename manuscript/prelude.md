@@ -8,7 +8,6 @@ package prelude
 
 import zio.prelude.Newtype
 import zio.ZIOAppDefault
-import scalaBasics.forComprehension
 import zio.ZIO
 import zio.Console.printLine
 import zio.prelude.Assertion._
@@ -97,7 +96,6 @@ package prelude
 
 import zio.prelude.Newtype
 import zio.ZIOAppDefault
-import scalaBasics.forComprehension
 import zio.ZIO
 import zio.Console.printLine
 import zio.prelude.Assertion._

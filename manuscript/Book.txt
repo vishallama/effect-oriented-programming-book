@@ -26,11 +26,9 @@ diningphilosophers.md
 interpreter-chaining_previous_result_and_environmental_dependency.md
 layers.md
 javawrappers.md
-zioBasics.md
 interpreter-level1_nochaining.md
 bigdec.md
 ZIOFromNothing.md
-scalaBasics.md
 interpreter-level2_chaining.md
 Hubs.md
 TicTacToe.md
@@ -42,9 +40,8 @@ HelloZio.md
 Parallelism.md
 game_theory.md
 scenarios.md
-fibers.md
-atomic-realZIO.md
 prelude.md
+std_type_conversions_to_zio.md
 interpreter-chaining_with_previous_result.md
 experiments-src-test-scala-zio_test.md
 experiments-src-test-scala-layers.md
