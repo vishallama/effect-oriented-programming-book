@@ -33,6 +33,7 @@ interpreter-level2_chaining.md
 Hubs.md
 TicTacToe.md
 runtime.md
+experiments-src-test-scala-testcontainers.md
 crypto.md
 environment_exploration-opaque.md
 simulations.md
