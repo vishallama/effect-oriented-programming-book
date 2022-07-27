@@ -109,10 +109,14 @@ import java.sql.SQLException
 import java.time.Instant
 import javax.sql.DataSource
 
-trait UserNotFound
+enum ActionType:
+  case LogIn,
+    LogOut,
+    UpdatePreferences
+
 case class UserAction(
     userId: String,
-    actionType: String,
+    actionType: ActionType,
     timestamp: Instant
 )
 
@@ -167,6 +171,17 @@ final case class UserActionServiceLive(
 
   import java.util.UUID
 
+  implicit val encodeUserAction
+      : MappedEncoding[ActionType, String] =
+    MappedEncoding[ActionType, String](
+      _.toString
+    )
+  implicit val decodeUserAction
+      : MappedEncoding[String, ActionType] =
+    MappedEncoding[String, ActionType](
+      ActionType.valueOf(_)
+    )
+
   implicit val encodeUUID
       : MappedEncoding[Instant, String] =
     MappedEncoding[Instant, String](_.toString)
@@ -216,6 +231,7 @@ import zio.*
 import java.sql.SQLException
 import javax.sql.DataSource
 
+trait UserNotFound
 case class AppUser(userId: String, name: String)
 
 trait UserService:
@@ -232,8 +248,8 @@ object UserService:
     UserNotFound,
     AppUser
   ] =
-    ZIO.serviceWithZIO[UserService](x =>
-      x.get(userId)
+    ZIO.serviceWithZIO[UserService](
+      _.get(userId)
     ) // use .option ?
 
   def insert(user: AppUser): ZIO[
@@ -241,8 +257,8 @@ object UserService:
     Nothing,
     Long
   ] = // TODO Um? Why Nothing?????
-    ZIO.serviceWithZIO[UserService](x =>
-      x.insert(user)
+    ZIO.serviceWithZIO[UserService](
+      _.insert(user)
     )
 
 final case class UserServiceLive(
