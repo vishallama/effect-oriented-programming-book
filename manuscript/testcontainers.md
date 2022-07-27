@@ -111,16 +111,28 @@ case class AppUser(userId: String, name: String)
 trait UserService:
   def get(
       userId: String
-  ): ZIO[DataSource, UserNotFound, AppUser]
+  ): ZIO[Any, UserNotFound, AppUser]
+  def insert(
+      user: AppUser
+  ): ZIO[Any, Nothing, Long]
 
 object UserService:
   def get(userId: String): ZIO[
     UserService with DataSource,
     UserNotFound,
     AppUser
-  ] = // TODO Um? Why Nothing?????
+  ] =
     ZIO.serviceWithZIO[UserService](x =>
       x.get(userId)
+    ) // use .option ?
+
+  def insert(user: AppUser): ZIO[
+    UserService with DataSource,
+    Nothing,
+    Long
+  ] = // TODO Um? Why Nothing?????
+    ZIO.serviceWithZIO[UserService](x =>
+      x.insert(user)
     )
 
 final case class UserServiceLive(
@@ -135,7 +147,7 @@ final case class UserServiceLive(
 
   def get(
       userId: String
-  ): ZIO[DataSource, UserNotFound, AppUser] =
+  ): ZIO[Any, UserNotFound, AppUser] =
     inline def somePeople =
       quote {
         query[AppUser]
@@ -147,6 +159,19 @@ final case class UserServiceLive(
       )
       .orDie
       .map(_.head)
+
+  def insert(
+      user: AppUser
+  ): ZIO[Any, Nothing, Long] =
+    inline def insert =
+      quote {
+        query[AppUser].insertValue(lift(user))
+      }
+    run(insert)
+      .provideEnvironment(
+        ZEnvironment(dataSource)
+      )
+      .orDie
 end UserServiceLive
 
 object UserServiceLive:
