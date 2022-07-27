@@ -34,8 +34,9 @@ object ContainerSpec extends ZIOSpecDefault {
     ) @@ DbMigrationAspect.migrateOnce("db")()).provideShared(
       UserServiceLive.layer,
 //      testContainerSource,
+      ZPostgreSQLContainer.live,
       ZPostgreSQLContainer.Settings.default,
-      postgres,
+//      postgres,
     )
 }
 
