@@ -98,14 +98,124 @@ end QuillContext
 ```
 
 
+### experiments/src/main/scala/testcontainers/UserActionService.scala
+```scala
+package testcontainers
+
+import io.getquill.{Query, Quoted}
+import zio.*
+
+import java.sql.SQLException
+import java.time.Instant
+import javax.sql.DataSource
+
+trait UserNotFound
+case class UserAction(
+    userId: String,
+    actionType: String,
+    timestamp: Instant
+)
+
+trait UserActionService:
+  def get(
+      userId: String
+  ): ZIO[Any, UserNotFound, List[UserAction]]
+  def insert(
+      user: UserAction
+  ): ZIO[Any, Nothing, Long]
+
+object UserActionService:
+  def get(userId: String): ZIO[
+    UserActionService with DataSource,
+    UserNotFound,
+    List[UserAction]
+  ] =
+    ZIO.serviceWithZIO[UserActionService](x =>
+      x.get(userId)
+    ) // use .option ?
+
+  def insert(user: UserAction): ZIO[
+    UserActionService with DataSource,
+    Nothing,
+    Long
+  ] = // TODO Um? Why Nothing?????
+    ZIO.serviceWithZIO[UserActionService](x =>
+      x.insert(user)
+    )
+
+final case class UserActionServiceLive(
+    dataSource: DataSource
+) extends UserActionService:
+  import io.getquill._
+  // SnakeCase turns firstName -> first_name
+  val ctx = new PostgresZioJdbcContext(SnakeCase)
+  import ctx._
+
+  inline def runWithSourceQuery[T](
+      inline quoted: Quoted[Query[T]]
+  ): ZIO[Any, SQLException, List[T]] =
+    run(quoted).provideEnvironment(
+      ZEnvironment(dataSource)
+    )
+
+  inline def runWithSourceInsert[T](
+      inline quoted: Quoted[Insert[T]]
+  ): ZIO[Any, SQLException, Long] =
+    run(quoted).provideEnvironment(
+      ZEnvironment(dataSource)
+    )
+
+  import java.util.UUID
+
+  implicit val encodeUUID
+      : MappedEncoding[Instant, String] =
+    MappedEncoding[Instant, String](_.toString)
+  implicit val decodeUUID
+      : MappedEncoding[String, Instant] =
+    MappedEncoding[String, Instant](
+      Instant.parse(_)
+    )
+
+  def get(
+      userId: String
+  ): ZIO[Any, UserNotFound, List[UserAction]] =
+    inline def somePeople =
+      quote {
+        query[UserAction]
+          .filter(_.userId == lift(userId))
+      }
+    runWithSourceQuery(somePeople).orDie
+
+  def insert(
+      user: UserAction
+  ): ZIO[Any, Nothing, Long] =
+    inline def insert =
+      quote {
+        query[UserAction].insertValue(lift(user))
+      }
+    runWithSourceInsert(insert).orDie
+end UserActionServiceLive
+
+object UserActionServiceLive:
+  val layer
+      : URLayer[DataSource, UserActionService] =
+    ZLayer.fromFunction(
+      UserActionServiceLive.apply _
+    )
+
+```
+
+
 ### experiments/src/main/scala/testcontainers/UserService.scala
 ```scala
 package testcontainers
 
+import io.getquill.{Query, Quoted}
 import zio.*
+
+import java.sql.SQLException
 import javax.sql.DataSource
 
-trait UserNotFound
 case class AppUser(userId: String, name: String)
 
 trait UserService:
@@ -140,10 +250,22 @@ final case class UserServiceLive(
 ) extends UserService:
   import io.getquill._
   // SnakeCase turns firstName -> first_name
-  println("A")
   val ctx = new PostgresZioJdbcContext(SnakeCase)
-  println("B")
   import ctx._
+
+  inline def runWithSourceQuery[T](
+      inline quoted: Quoted[Query[T]]
+  ): ZIO[Any, SQLException, List[T]] =
+    run(quoted).provideEnvironment(
+      ZEnvironment(dataSource)
+    )
+
+  inline def runWithSourceInsert[T](
+      inline quoted: Quoted[Insert[T]]
+  ): ZIO[Any, SQLException, Long] =
+    run(quoted).provideEnvironment(
+      ZEnvironment(dataSource)
+    )
 
   def get(
       userId: String
@@ -153,10 +275,7 @@ final case class UserServiceLive(
         query[AppUser]
           .filter(_.userId == lift(userId))
       }
-    run(somePeople)
-      .provideEnvironment(
-        ZEnvironment(dataSource)
-      )
+    runWithSourceQuery(somePeople)
       .orDie
       .map(_.head)
 
@@ -167,11 +286,7 @@ final case class UserServiceLive(
       quote {
         query[AppUser].insertValue(lift(user))
       }
-    run(insert)
-      .provideEnvironment(
-        ZEnvironment(dataSource)
-      )
-      .orDie
+    runWithSourceInsert(insert).orDie
 end UserServiceLive
 
 object UserServiceLive:
