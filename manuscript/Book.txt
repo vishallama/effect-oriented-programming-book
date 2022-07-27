@@ -49,5 +49,6 @@ interpreter-chaining_with_previous_result.md
 experiments-src-test-scala-zio_test.md
 experiments-src-test-scala-layers.md
 experiments-src-test-scala-bigdec.md
+virtual_meeting.md
 zio_intro.md
 interpreter-chaining_with_monads.md
