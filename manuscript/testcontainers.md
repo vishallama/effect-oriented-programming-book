@@ -152,7 +152,13 @@ final case class UserActionServiceLive(
 ) extends UserActionService:
   import io.getquill._
   // SnakeCase turns firstName -> first_name
-  val ctx = new PostgresZioJdbcContext(SnakeCase)
+  val ctx =
+    new PostgresZioJdbcContext(
+      NamingStrategy(
+        PluralizedTableNames,
+        SnakeCase
+      )
+    )
   import ctx._
 
   inline def runWithSourceQuery[T](
@@ -232,27 +238,25 @@ import java.sql.SQLException
 import javax.sql.DataSource
 
 trait UserNotFound
-case class AppUser(userId: String, name: String)
+case class User(userId: String, name: String)
 
 trait UserService:
   def get(
       userId: String
-  ): ZIO[Any, UserNotFound, AppUser]
-  def insert(
-      user: AppUser
-  ): ZIO[Any, Nothing, Long]
+  ): ZIO[Any, UserNotFound, User]
+  def insert(user: User): ZIO[Any, Nothing, Long]
 
 object UserService:
   def get(userId: String): ZIO[
     UserService with DataSource,
     UserNotFound,
-    AppUser
+    User
   ] =
     ZIO.serviceWithZIO[UserService](
       _.get(userId)
     ) // use .option ?
 
-  def insert(user: AppUser): ZIO[
+  def insert(user: User): ZIO[
     UserService with DataSource,
     Nothing,
     Long
@@ -266,7 +270,14 @@ final case class UserServiceLive(
 ) extends UserService:
   import io.getquill._
   // SnakeCase turns firstName -> first_name
-  val ctx = new PostgresZioJdbcContext(SnakeCase)
+
+  val ctx =
+    new PostgresZioJdbcContext(
+      NamingStrategy(
+        PluralizedTableNames,
+        SnakeCase
+      )
+    )
   import ctx._
 
   inline def runWithSourceQuery[T](
@@ -285,10 +296,10 @@ final case class UserServiceLive(
 
   def get(
       userId: String
-  ): ZIO[Any, UserNotFound, AppUser] =
+  ): ZIO[Any, UserNotFound, User] =
     inline def somePeople =
       quote {
-        query[AppUser]
+        query[User]
           .filter(_.userId == lift(userId))
       }
     runWithSourceQuery(somePeople)
@@ -296,11 +307,11 @@ final case class UserServiceLive(
       .map(_.head)
 
   def insert(
-      user: AppUser
+      user: User
   ): ZIO[Any, Nothing, Long] =
     inline def insert =
       quote {
-        query[AppUser].insertValue(lift(user))
+        query[User].insertValue(lift(user))
       }
     runWithSourceInsert(insert).orDie
 end UserServiceLive
