@@ -2,6 +2,33 @@
 
  
 
+### experiments/src/main/scala/testcontainers/InteractWithDatabase.scala
+```scala
+package testcontainers
+
+import io.github.scottweaver.zio.testcontainers.postgres.ZPostgreSQLContainer
+import zio.*
+
+object InteractWithDatabase
+    extends ZIOAppDefault:
+//  val logic =
+//    for {
+//      _ <-
+//
+//    }
+
+  def run =
+    UserService
+      .get("blah")
+      .provide(
+        UserServiceLive.layer,
+//      UserActionServiceLive.layer,
+        QuillContext.dataSourceLayer
+      )
+
+```
+
+
 ### experiments/src/main/scala/testcontainers/QuillContext.scala
 ```scala
 package testcontainers
@@ -9,6 +36,8 @@ package testcontainers
 import com.typesafe.config.ConfigFactory
 import io.getquill.context.ZioJdbc.DataSourceLayer
 import io.getquill.{
+  NamingStrategy,
+  PluralizedTableNames,
   PostgresZioJdbcContext,
   SnakeCase
 }
@@ -25,7 +54,12 @@ import scala.jdk.CollectionConverters.MapHasAsJava
   * production.
   */
 object QuillContext
-    extends PostgresZioJdbcContext(SnakeCase):
+    extends PostgresZioJdbcContext(
+      NamingStrategy(
+        PluralizedTableNames,
+        SnakeCase
+      )
+    ):
   val dataSourceLayer
       : ZLayer[Any, Nothing, DataSource] =
     ZLayer {
@@ -129,20 +163,18 @@ trait UserActionService:
   ): ZIO[Any, Nothing, Long]
 
 object UserActionService:
-  def get(userId: String): ZIO[
-    UserActionService with DataSource,
-    UserNotFound,
-    List[UserAction]
-  ] =
+  def get(
+      userId: String
+  ): ZIO[UserActionService, UserNotFound, List[
+    UserAction
+  ]] =
     ZIO.serviceWithZIO[UserActionService](x =>
       x.get(userId)
     ) // use .option ?
 
-  def insert(user: UserAction): ZIO[
-    UserActionService with DataSource,
-    Nothing,
-    Long
-  ] = // TODO Um? Why Nothing?????
+  def insert(
+      user: UserAction
+  ): ZIO[UserActionService, Nothing, Long] =
     ZIO.serviceWithZIO[UserActionService](x =>
       x.insert(user)
     )
@@ -233,6 +265,7 @@ package testcontainers
 
 import io.getquill.{Query, Quoted}
 import zio.*
+import io.getquill._
 
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -245,6 +278,7 @@ trait UserService:
       userId: String
   ): ZIO[Any, UserNotFound, User]
   def insert(user: User): ZIO[Any, Nothing, Long]
+  // TODO update(user)
 
 object UserService:
   def get(userId: String): ZIO[
@@ -268,7 +302,6 @@ object UserService:
 final case class UserServiceLive(
     dataSource: DataSource
 ) extends UserService:
-  import io.getquill._
   // SnakeCase turns firstName -> first_name
 
   val ctx =
@@ -278,21 +311,7 @@ final case class UserServiceLive(
         SnakeCase
       )
     )
-  import ctx._
-
-  inline def runWithSourceQuery[T](
-      inline quoted: Quoted[Query[T]]
-  ): ZIO[Any, SQLException, List[T]] =
-    run(quoted).provideEnvironment(
-      ZEnvironment(dataSource)
-    )
-
-  inline def runWithSourceInsert[T](
-      inline quoted: Quoted[Insert[T]]
-  ): ZIO[Any, SQLException, Long] =
-    run(quoted).provideEnvironment(
-      ZEnvironment(dataSource)
-    )
+  import ctx.{run, lift, _}
 
   def get(
       userId: String
@@ -302,7 +321,10 @@ final case class UserServiceLive(
         query[User]
           .filter(_.userId == lift(userId))
       }
-    runWithSourceQuery(somePeople)
+    run(somePeople)
+      .provideEnvironment(
+        ZEnvironment(dataSource)
+      )
       .orDie
       .map(_.head)
 
@@ -313,18 +335,19 @@ final case class UserServiceLive(
       quote {
         query[User].insertValue(lift(user))
       }
-    runWithSourceInsert(insert).orDie
+    run(insert)
+      .provideEnvironment(
+        ZEnvironment(dataSource)
+      )
+      .orDie
 end UserServiceLive
 
 object UserServiceLive:
-  val layer: URLayer[DataSource, UserService] =
-    ZLayer.fromFunction(UserServiceLive.apply _)
-//    ZLayer.fromZIO(
-//    for {
-//      ds <- ZIO.service[DataSource]
-//    } yield UserServiceLive(ds)
-//    )
-//    ZLayer.fromFunction()
+  val layer =
+    ZLayer.fromZIO(
+      for datasource <- ZIO.service[DataSource]
+      yield UserServiceLive(datasource)
+    )
 
 ```
 

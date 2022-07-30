@@ -6,6 +6,9 @@
 ```scala
 package virtual_meeting
 
+import zio._
+import zio.stream._
+
 trait Rule
 object Rule:
   trait MaximumContinuousSpeaker extends Rule
@@ -56,6 +59,14 @@ case class Meeting(
       Nothing,
       MeetingMoment
     ]
+)
+
+case class Meeting2(
+    frames: Ref[Set[zio.stream.ZStream[
+      Any,
+      Nothing,
+      MeetingMoment
+    ]]]
 )
 
 ```
