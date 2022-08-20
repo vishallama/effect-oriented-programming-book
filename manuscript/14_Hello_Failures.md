@@ -219,7 +219,8 @@ def getTemperatureZ(behavior: Scenario): ZIO[
   else
     ZIO.succeed("30 degrees")
 
-Unsafe.unsafeCompat { implicit u =>
+Unsafe.unsafe { (u: Unsafe) =>
+  given Unsafe = u
   unsafe
     .run(getTemperatureZ(Scenario.Success))
     .getOrThrowFiberFailure()
@@ -228,7 +229,8 @@ Unsafe.unsafeCompat { implicit u =>
 ```
 
 ```scala
-Unsafe.unsafeCompat { implicit u =>
+Unsafe.unsafe { (u: Unsafe) =>
+  given Unsafe = u
   unsafe
     .run(
       getTemperatureZ(Scenario.Success)
@@ -243,21 +245,22 @@ Unsafe.unsafeCompat { implicit u =>
 // 
 // It would fail on pattern case: _: GpsException
 // 
-//       )
-//      ^
+// Unsafe.unsafe { (u: Unsafe) =>
+//                ^
 ```
 
 TODO Demonstrate ZIO calculating the error types without an explicit annotation being provided
 
 ```scala
-Unsafe.unsafeCompat { implicit u =>
+Unsafe.unsafe { (u: Unsafe) =>
+  given Unsafe = u
   unsafe
     .run(getTemperatureZ(Scenario.GPSError))
     .getOrThrowFiberFailure()
 }
 // Exception in thread "zio-fiber-200026" repl.MdocSession$App$GpsException: repl.MdocSession$App$GpsException
-// 	at repl.MdocSession$.App.<local App>.getTemperatureZ.macro(14_Hello_Failures.md:151)
-// 	at repl.MdocSession$.App.<local App>.macro(14_Hello_Failures.md:179)
+// 	at repl.MdocSession.App.<local App>.getTemperatureZ(14_Hello_Failures.md:151)
+// 	at repl.MdocSession.App.<local App>(14_Hello_Failures.md:181)
 ```
 
 ### Wrapping Legacy Code
@@ -289,7 +292,8 @@ def displayTemperatureZWrapped(
 
 ```scala
 import zio.Runtime.default.unsafe
-Unsafe.unsafeCompat { implicit u =>
+Unsafe.unsafe { (u: Unsafe) =>
+  given Unsafe = u
   unsafe
     .run(
       displayTemperatureZWrapped(
@@ -302,7 +306,8 @@ Unsafe.unsafeCompat { implicit u =>
 ```
 
 ```scala
-Unsafe.unsafeCompat { implicit u =>
+Unsafe.unsafe { (u: Unsafe) =>
+  given Unsafe = u
   unsafe
     .run(
       displayTemperatureZWrapped(
@@ -332,6 +337,8 @@ import mdoc.unsafeRunTruncate
 unsafeRunTruncate(
   getTemperatureZGpsGap(Scenario.GPSError)
 )
+// Defect: class scala.MatchError
+//         GpsException
 // res10: String | Unit | String = ()
 ```
 

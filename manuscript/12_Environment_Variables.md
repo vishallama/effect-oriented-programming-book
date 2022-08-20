@@ -220,16 +220,16 @@ val fancyLodging: ZIO[
   for hotel <- HotelApiZ.cheapest("90210")
   yield hotel
 // fancyLodging: ZIO[SystemStrict & HotelApiZ, Error, Hotel] = OnSuccess(
-//   trace = "repl.MdocSession$.App.fancyLodging.macro(12_Environment_Variables.md:262)",
+//   trace = "repl.MdocSession.App.fancyLodging(12_Environment_Variables.md:262)",
 //   first = OnSuccess(
-//     trace = "repl.MdocSession$.App.HotelApiZ$.cheapest.macro(12_Environment_Variables.md:226)",
+//     trace = "repl.MdocSession.App.HotelApiZ.cheapest(12_Environment_Variables.md:226)",
 //     first = Sync(
-//       trace = "repl.MdocSession$.App.HotelApiZ$.cheapest.macro(12_Environment_Variables.md:226)",
-//       eval = zio.ZIOCompanionVersionSpecific$$Lambda$15290/1053717016@bf10705
+//       trace = "repl.MdocSession.App.HotelApiZ.cheapest(12_Environment_Variables.md:226)",
+//       eval = zio.ZIOCompanionVersionSpecific$$Lambda$15460/1089037054@2c7c2bd2
 //     ),
-//     successK = zio.ZIO$$$Lambda$15243/1407244620@332cb9d1
+//     successK = zio.ZIO$$$Lambda$15400/1681919266@7377f47c
 //   ),
-//   successK = zio.ZIO$$Lambda$15235/1077351789@527317bb
+//   successK = zio.ZIO$$Lambda$15394/1622694565@328c97e1
 // )
 ```
 
@@ -338,7 +338,8 @@ val testApiLayer =
 ```scala
 import zio.Unsafe
 import zio.Runtime.default.unsafe
-Unsafe.unsafeCompat { implicit u =>
+Unsafe.unsafe { (u: Unsafe) =>
+  given Unsafe = u
   unsafe
     .run(fancyLodging.provide(testApiLayer))
     .getOrThrowFiberFailure()
@@ -391,7 +392,8 @@ trait Exercise1:
 import zio.Unsafe
 import zio.Runtime.default.unsafe
 val exercise1case1 =
-  Unsafe.unsafeCompat { implicit u =>
+  Unsafe.unsafe { (u: Unsafe) =>
+    given Unsafe = u
     unsafe
       .run(
         Exercise1Solution
@@ -410,7 +412,8 @@ assert(exercise1case1 == "value")
 
 ```scala
 val exercise1case2 =
-  Unsafe.unsafeCompat { implicit u =>
+  Unsafe.unsafe { (u: Unsafe) =>
+    given Unsafe = u
     unsafe
       .run(
         Exercise1Solution
