@@ -39,7 +39,36 @@ object DbMigration {
         .orDie
 
 
+  def migratedLayer(jdbcInfo: ZEnvironment[JdbcInfo]): ZLayer[Any, Throwable, Unit] =
+    ZLayer.fromZIO(
+      DbMigration.migrate("db")().provideEnvironment(jdbcInfo).unit
+    )
+    
 }
+
+```
+
+
+### experiments/src/test/scala/testcontainers/SharedDbLayer.scala
+```scala
+package testcontainers
+
+import io.github.scottweaver.models.JdbcInfo
+import io.github.scottweaver.zio.testcontainers.postgres.ZPostgreSQLContainer
+import zio.ZLayer
+
+import javax.sql.DataSource
+
+object SharedDbLayer:
+  val layer =
+    for
+      layer <-
+        ZLayer.make[DataSource & JdbcInfo](
+          ZPostgreSQLContainer.live,
+          ZPostgreSQLContainer.Settings.default
+        )
+      _ <- DbMigration.migratedLayer(layer)
+    yield layer
 
 ```
 
@@ -99,27 +128,13 @@ import zio.test.*
 import java.sql.Connection
 import javax.sql.DataSource
 
-object SharedDbLayer:
-  val layer =
-    for {
-      layer <- ZLayer.make[DataSource & JdbcInfo](
-        ZPostgreSQLContainer.live,
-        ZPostgreSQLContainer.Settings.default,
-      )
-      _ <- ZLayer.fromZIO(DbMigration.migrate("db")().provideEnvironment(layer))
-    } yield layer
-
 object UserActionSpec extends ZIOSpec[DataSource & JdbcInfo] {
   val bootstrap =
     SharedDbLayer.layer
-  val testContainerSource: ZLayer[JdbcInfo, Nothing, DataSource] = TestContainerLayers.dataSourceLayer
-  val postgres: ZLayer[Settings, Nothing, JdbcInfo & Connection &
-    PGSimpleDataSource
-      & PostgreSQLContainer] = ZPostgreSQLContainer.live
+    
   def spec =
     (suite("UserActionService")(
       test("inserts a user"){
-        val newUser = User("user_id_from_app", "Appy")
         for {
           _ <- UserActionService.get("uuid_hard_coded").debug("Actions")
         } yield assertCompletes
