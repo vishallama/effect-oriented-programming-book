@@ -140,7 +140,7 @@ import io.getquill.{Query, Quoted}
 import zio.*
 
 import java.sql.SQLException
-import java.time.Instant
+import java.time.{Instant, LocalDateTime}
 import javax.sql.DataSource
 
 enum ActionType:
@@ -151,7 +151,7 @@ enum ActionType:
 case class UserAction(
     userId: String,
     actionType: ActionType,
-    timestamp: Instant
+    timestamp: LocalDateTime
 )
 
 trait UserActionService:
