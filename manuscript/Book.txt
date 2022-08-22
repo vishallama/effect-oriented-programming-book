@@ -28,6 +28,7 @@ layers.md
 javawrappers.md
 interpreter-level1_nochaining.md
 bigdec.md
+typeclasses.md
 ZIOFromNothing.md
 testcontainers.md
 interpreter-level2_chaining.md
