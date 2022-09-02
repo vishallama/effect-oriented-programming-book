@@ -18,6 +18,10 @@ trait Communicate[T]:
   extension (t: T)
     def communicate(): Unit
 
+trait Eater[T]:
+  extension (t: T)
+    def eat(): Unit
+
 given Communicate[Person] with
   extension (t: Person)
     override def communicate(): Unit = t.greet()
@@ -25,6 +29,8 @@ given Communicate[Person] with
 given Communicate[Dog] with
   extension (t: Dog)
     override def communicate(): Unit = t.bark()
+
+class Cat()
 
 object PolymorphismUnbound extends App:
 
