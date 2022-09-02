@@ -132,7 +132,9 @@ class MutationTracking:
       Human
 
 object TimelineFinally extends App:
-  try throw new Exception("Straightened Spine")
+  try
+    "Everything went fine"
+//    throw new Exception("Straightened Spine")
   finally
     try throw new Exception("Less Hair")
     finally
