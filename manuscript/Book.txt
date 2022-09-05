@@ -19,6 +19,7 @@
 18_Environment_Exploration.md
 19_Resources.md
 20_STM.md
+21_Executing_External_Programs.md
 ExperimentsSection.md
 resourcemanagement.md
 microcontrollers.md
