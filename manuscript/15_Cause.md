@@ -1,17 +1,85 @@
 # Cause
 
-Consider an Evolutionary example, where a `Cause` allows us to track 
-MutationExceptions throughout a length process
+`Cause` will track all errors originating from a single call in an application, regardless of concurrency and parallelism.
 
-Cause will track all errors that occur in an application, regardless of concurrency and parallelism
+```scala
+import zio._
+import mdoc.unsafeRunPrettyPrint
+val logic =
+  ZIO.die(new Exception("Client connection lost"))
+      .ensuring(ZIO.die(
+        throw new Exception("Release Failed")
+        )
+  )
+unsafeRunPrettyPrint(logic)
+// Exception in thread "zio-fiber-200030" java.lang.Exception: Client connection lost
+// 	at repl.MdocSession$App.$anonfun$1(15_Cause.md:11)
+// 	at repl.MdocSession.App.<local App>.logic(15_Cause.md:11)
+// 	at repl.MdocSession.App.<local App>.logic(15_Cause.md:15)
+// 	at mdoc.MdocHelpers$package.wrapUnsafeZIOReportError(MdocHelpers.scala:80)
+// 	at mdoc.MdocHelpers$package.wrapUnsafeZIOReportError(MdocHelpers.scala:93)
+// 	at mdoc.MdocHelpers$package.unsafeRunPrettyPrint(MdocHelpers.scala:103)
+// 	Suppressed: java.lang.Exception: Release Failed
+// 		at repl.MdocSession$App.$anonfun$2$$anonfun$1(15_Cause.md:13)
+// 		at repl.MdocSession.App.<local App>.logic(15_Cause.md:14)
+// 		at repl.MdocSession.App.<local App>.logic(15_Cause.md:15)
+// 		at mdoc.MdocHelpers$package.wrapUnsafeZIOReportError(MdocHelpers.scala:80)
+// 		at mdoc.MdocHelpers$package.wrapUnsafeZIOReportError(MdocHelpers.scala:93)
+// 		at mdoc.MdocHelpers$package.unsafeRunPrettyPrint(MdocHelpers.scala:103)
+```
 
 Cause allows you to aggregate multiple errors of the same type
 
-&&/Both represents parallel failures
-++/Then represents sequential failures
+`&&`/`Both` represents parallel failures
+`++`/`Then` represents sequential failures
 
 Cause.die will show you the line that failed, because it requires a throwable
-Cause.fail will not, because it can be any arbitrary type
+Cause.fail will not necessarily, because it can be any arbitrary type
+
+## Avoided Technique - Throwing Exceptions
+
+Now we will highlight the deficiencies of throwing `Exception`s.
+The previous code might be written in this style:
+
+```scala
+import zio._
+import mdoc.unsafeRunPrettyPrint
+val thrownLogic =
+  ZIO.attempt(
+    try
+      throw new Exception("Client connection lost")
+    finally
+      try 
+        () // Cleanup
+      finally
+        throw new Exception("Release Failed")
+  )
+// thrownLogic: ZIO[Any, Throwable, Nothing] = Stateful(
+//   trace = "repl.MdocSession.App.thrownLogic(15_Cause.md:39)",
+//   onState = zio.ZIOCompanionVersionSpecific$$Lambda$14621/1596116512@3240db74
+// )
+unsafeRunPrettyPrint(thrownLogic)
+// Should handle errors
+// res0: String = "java.lang.Exception: Release Failed"
+```
+
+We will only see the later `pool` problem.
+If we throw an `Exception` in our logic, and then throw another while cleaning up, we simply lose the original.
+This is because thrown `Exception`s cannot be _composed_.
+
+In a language that cannot `throw`, following the execution path is simple, following 2 basic rules:
+
+    - At a branch, execute only the first match
+    - Otherwise, Read everything from left-to-right, top-to-bottom, 
+
+Once you add `throw`, the rules are more complicated
+
+    - At a branch, execute only the first match
+    - Otherwise, Read everything from left-to-right, top-to-bottom,
+    - Unless we `throw`, which means immediately jumping through a different dimension away from the code you're viewing
+
+### Linear reporting
+Everything must be reported linearly, even in systems that are executing on different fibers, across several threads, amongst multiple cores.
 
 
 ## Automatically attached experiments.
@@ -46,6 +114,21 @@ object CauseZIO extends ZIOAppDefault:
   val x: ZIO[Any, Nothing, Nothing] =
     ZIO.die(Exception("Blah"))
   def run = ZIO.die(Exception("Blah"))
+
+object LostInfo extends ZIOAppDefault:
+  def run =
+    ZIO.attempt(
+      try
+        throw new Exception(
+          "Client connection lost"
+        )
+      finally
+        try () // Cleanup
+        finally
+          throw new Exception(
+            "Problem relinquishing to pool"
+          )
+    )
 
 ```
 
@@ -98,16 +181,23 @@ object MalcomInTheMiddle extends ZIOAppDefault:
                       driveToStore()
                     catch
                       case deadCar: DeadCar =>
-                        try
-                          repairCar()
-                        catch
-                          case nagging: Nagging =>
-                            ZIO
-                              .debug(
-                                "What does it look like I'm doing?!"
-                              )
-                              .exitCode
+                        try repairCar()
+                        finally
+                          ZIO
+                            .debug(
+                              "What does it look like I'm doing?!"
+                            )
+                            .exitCode
+    finally
+      println
     end try
+//    finally
+//      ZIO
+//        .debug(
+//          "What does it look like I'm doing?!"
+//        )
+//    .exitCode
+
   end run
 
 /** try { turnOnLights } catch { case
@@ -132,9 +222,7 @@ class MutationTracking:
       Human
 
 object TimelineFinally extends App:
-  try
-    "Everything went fine"
-//    throw new Exception("Straightened Spine")
+  try throw new Exception("Straightened Spine")
   finally
     try throw new Exception("Less Hair")
     finally
@@ -148,23 +236,11 @@ object Timeline extends zio.ZIOAppDefault:
     ZIO.die(Exception("Fine voice control"))
 
   val timeline =
-    (
-      mutation1
-        .ensuring(mutation2)
-        .ensuring(mutation3)
-    )
-    // .sandbox
-//      .catchAll { case cause: Cause[String] =>
-//        printLine(cause.defects)
-//      }
-
-//  val failable: ZIO[Any, String, Nothing] = ZIO.fail("boom")
-  val timelineSandboxed
-      : ZIO[Any, Cause[String], Nothing] =
-    timeline.sandbox
+    mutation1
+      .ensuring(mutation2)
+      .ensuring(mutation3)
 
   def run = timeline.sandbox
-end Timeline
 
 ```
 
