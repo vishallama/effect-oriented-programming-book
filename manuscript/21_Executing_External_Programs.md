@@ -44,16 +44,40 @@ import zio.process.{
  * - Show a certain time period
  * - More recent activity
  * - Cycle between different repositories */
-object Gource extends ZIOAppDefault:
+object GourceDemo extends ZIOAppDefault:
 
-  def run =
+  def gource(repoDir: String) =
     Command(
       "gource",
 //      "--follow-user", "bfrasure", // Highlights user, but still shows others
       "--user-show-filter",
-      "bfrasure", // Only shows user
-      "/Users/bfrasure/Repositories/book"
-    ).run
+      "bfrasure|Bill Frasure", // Only shows user
+      repoDir
+    )
+
+  val projects =
+    List(
+      "/Users/bfrasure/Repositories/book",
+      "/Users/bfrasure/Repositories/TestFrameworkComparison"
+    )
+
+  def showActivityForAWhile(repoDir: String) =
+    for
+      run1 <- gource(repoDir).run
+      _    <- ZIO.sleep(5.seconds)
+      _    <- run1.killForcibly
+    yield ()
+
+  def randomProjectActivity =
+    for
+      idx <-
+        Random.nextIntBounded(projects.length)
+      _ <- showActivityForAWhile(projects(idx))
+    yield ()
+  def run =
+    for _ <- randomProjectActivity.repeatN(2)
+    yield ()
+end GourceDemo
 
 ```
 
