@@ -6,23 +6,25 @@
 import zio._
 import mdoc.unsafeRunPrettyPrint
 val logic =
-  ZIO.die(new Exception("Client connection lost"))
-      .ensuring(ZIO.die(
+  ZIO
+    .die(new Exception("Client connection lost"))
+    .ensuring(
+      ZIO.die(
         throw new Exception("Release Failed")
-        )
-  )
+      )
+    )
 unsafeRunPrettyPrint(logic)
 // Exception in thread "zio-fiber-200030" java.lang.Exception: Client connection lost
-// 	at repl.MdocSession$App.$anonfun$1(15_Cause.md:11)
-// 	at repl.MdocSession.App.<local App>.logic(15_Cause.md:11)
-// 	at repl.MdocSession.App.<local App>.logic(15_Cause.md:15)
+// 	at repl.MdocSession$App.$anonfun$1(15_Cause.md:12)
+// 	at repl.MdocSession.App.<local App>.logic(15_Cause.md:12)
+// 	at repl.MdocSession.App.<local App>.logic(15_Cause.md:17)
 // 	at mdoc.MdocHelpers$package.wrapUnsafeZIOReportError(MdocHelpers.scala:80)
 // 	at mdoc.MdocHelpers$package.wrapUnsafeZIOReportError(MdocHelpers.scala:93)
 // 	at mdoc.MdocHelpers$package.unsafeRunPrettyPrint(MdocHelpers.scala:103)
 // 	Suppressed: java.lang.Exception: Release Failed
-// 		at repl.MdocSession$App.$anonfun$2$$anonfun$1(15_Cause.md:13)
-// 		at repl.MdocSession.App.<local App>.logic(15_Cause.md:14)
-// 		at repl.MdocSession.App.<local App>.logic(15_Cause.md:15)
+// 		at repl.MdocSession$App.$anonfun$2$$anonfun$1(15_Cause.md:15)
+// 		at repl.MdocSession.App.<local App>.logic(15_Cause.md:16)
+// 		at repl.MdocSession.App.<local App>.logic(15_Cause.md:17)
 // 		at mdoc.MdocHelpers$package.wrapUnsafeZIOReportError(MdocHelpers.scala:80)
 // 		at mdoc.MdocHelpers$package.wrapUnsafeZIOReportError(MdocHelpers.scala:93)
 // 		at mdoc.MdocHelpers$package.unsafeRunPrettyPrint(MdocHelpers.scala:103)
@@ -47,16 +49,17 @@ import mdoc.unsafeRunPrettyPrint
 val thrownLogic =
   ZIO.attempt(
     try
-      throw new Exception("Client connection lost")
+      throw new Exception(
+        "Client connection lost"
+      )
     finally
-      try 
-        () // Cleanup
+      try () // Cleanup
       finally
         throw new Exception("Release Failed")
   )
 // thrownLogic: ZIO[Any, Throwable, Nothing] = Stateful(
-//   trace = "repl.MdocSession.App.thrownLogic(15_Cause.md:39)",
-//   onState = zio.ZIOCompanionVersionSpecific$$Lambda$14790/1786027292@2022fc10
+//   trace = "repl.MdocSession.App.thrownLogic(15_Cause.md:42)",
+//   onState = zio.ZIOCompanionVersionSpecific$$Lambda$15429/2099627938@58242fc7
 // )
 unsafeRunPrettyPrint(thrownLogic)
 // Should handle errors
