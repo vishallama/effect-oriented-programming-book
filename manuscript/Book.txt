@@ -22,9 +22,11 @@
 21_Executing_External_Programs.md
 ExperimentsSection.md
 resourcemanagement.md
+energygrid.md
 microcontrollers.md
 diningphilosophers.md
 interpreter-chaining_previous_result_and_environmental_dependency.md
+experiments-src-test-scala-energrygrid.md
 layers.md
 javawrappers.md
 interpreter-level1_nochaining.md
